@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- ─── SEO Meta Tags ─────────────────── -->
+    <meta
+      name="description"
+      content="Kat Secondary School AI-Powered Management System — Addis Ababa, Ethiopia"
+    />
+    <meta name="keywords" content="school management, ethiopia, addis ababa, kat school, AI" />
+    <meta name="author" content="Kat Secondary School" />
+    <meta name="theme-color" content="#4f46e5" />
+
+    <!-- ─── Open Graph ────────────────────── -->
+    <meta property="og:title" content="Kat School Management System" />
+    <meta
+      property="og:description"
+      content="AI-Powered School Management System for Kat Secondary School"
+    />
+    <meta property="og:type" content="website" />
+
+    <!-- ─── Favicon ──────────────────────── -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+
+    <!-- ─── Google Fonts ─────────────────── -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- ─── Page Title ────────────────────── -->
+    <title>Kat School MS</title>
+
+    <!-- ─── Prevent Flash of Unstyled Content ─ -->
+    <script>
+      (function () {
+        const theme = localStorage.getItem('kat_theme') || 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+
+  <body class="antialiased">
+    <!-- ─── React Root ────────────────────── -->
+    <div id="root"></div>
+
+    <!-- ─── Vite Entry Point ──────────────── -->
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
