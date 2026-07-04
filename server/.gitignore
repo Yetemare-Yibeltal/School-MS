@@ -1,11 +1,6 @@
 # ============================================
-# KAT SCHOOL MANAGEMENT SYSTEM — .gitignore
+# KAT SCHOOL SERVER — .gitignore
 # ============================================
-
-# ─── Dependencies ───────────────────────────
-node_modules/
-client/node_modules/
-server/node_modules/
 
 # ─── Environment Variables ──────────────────
 .env
@@ -13,81 +8,60 @@ server/node_modules/
 .env.development
 .env.production
 .env.test
-server/.env
-client/.env
 
-# ─── Build Output ───────────────────────────
-dist/
-build/
-client/dist/
-client/build/
+# ─── Dependencies ───────────────────────────
+node_modules/
 
 # ─── Logs ───────────────────────────────────
 logs/
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
 # ─── Upload Folders ─────────────────────────
-server/uploads/photos/*
-server/uploads/documents/*
-!server/uploads/photos/.gitkeep
-!server/uploads/documents/.gitkeep
+uploads/photos/*
+uploads/documents/*
+!uploads/photos/.gitkeep
+!uploads/documents/.gitkeep
+
+# ─── Generated Export Files ─────────────────
+exports/
+generated/
+*.pdf
+*.xlsx
+*.xls
+*.csv
+
+# ─── Puppeteer Cache ────────────────────────
+.local-chromium/
+.cache/puppeteer/
 
 # ─── OS Files ───────────────────────────────
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
 desktop.ini
 
-# ─── IDE & Editor ───────────────────────────
+# ─── IDE ────────────────────────────────────
 .vscode/
 .idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
 *.swp
 *.swo
-.history/
 
 # ─── Testing ────────────────────────────────
 coverage/
 .nyc_output/
-*.lcov
 
-# ─── Cache ──────────────────────────────────
-.cache/
-.parcel-cache/
-.eslintcache
-.stylelintcache
-*.tsbuildinfo
-
-# ─── Temporary Files ────────────────────────
+# ─── Temporary ──────────────────────────────
 tmp/
 temp/
 *.tmp
 *.temp
 
-# ─── PDF & Excel Exports ────────────────────
-server/exports/
-client/public/exports/
-
-# ─── Docker ─────────────────────────────────
-.dockerignore
-
-# ─── Misc ───────────────────────────────────
+# ─── SSL Certificates ───────────────────────
 *.pem
 *.key
 *.cert
 *.p12
-.vercel
-.netlify
+
+# ─── Build ──────────────────────────────────
+dist/
+build/
