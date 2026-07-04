@@ -157,5 +157,5 @@ export default defineConfig(({ command, mode }) => {
 
     // ─── Log Level ───────────────────────────
     logLevel: mode === 'development' ? 'info' : 'warn',
-  };
-});
+  }
+})
