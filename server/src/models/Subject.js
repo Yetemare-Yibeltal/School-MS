@@ -6,11 +6,7 @@
 'use strict';
 
 const mongoose = require('mongoose');
-const {
-  GRADE_NAMES,
-  STREAMS,
-  SUBJECTS,
-} = require('../config/constants');
+const { GRADE_NAMES, STREAMS, SUBJECTS } = require('../config/constants');
 
 const subjectSchema = new mongoose.Schema(
   {
@@ -20,10 +16,7 @@ const subjectSchema = new mongoose.Schema(
       required: [true, 'Subject name is required'],
       unique: true,
       trim: true,
-      maxlength: [
-        100,
-        'Subject name cannot exceed 100 characters',
-      ],
+      maxlength: [100, 'Subject name cannot exceed 100 characters'],
       index: true,
     },
 
@@ -34,14 +27,8 @@ const subjectSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       uppercase: true,
-      maxlength: [
-        10,
-        'Code cannot exceed 10 characters',
-      ],
-      match: [
-        /^[A-Z0-9_]+$/,
-        'Code must be uppercase letters and numbers only',
-      ],
+      maxlength: [10, 'Code cannot exceed 10 characters'],
+      match: [/^[A-Z0-9_]+$/, 'Code must be uppercase letters and numbers only'],
       index: true,
     },
 
@@ -49,10 +36,7 @@ const subjectSchema = new mongoose.Schema(
     description: {
       type: String,
       trim: true,
-      maxlength: [
-        500,
-        'Description cannot exceed 500 characters',
-      ],
+      maxlength: [500, 'Description cannot exceed 500 characters'],
     },
 
     // ─── Academic Scope ───────────────────────
@@ -63,16 +47,12 @@ const subjectSchema = new mongoose.Schema(
         values: GRADE_NAMES,
         message: '{VALUE} is not a valid grade',
       },
-      required: [
-        true,
-        'At least one grade level is required',
-      ],
+      required: [true, 'At least one grade level is required'],
       validate: {
         validator: function (grades) {
           return grades.length > 0;
         },
-        message:
-          'Subject must be assigned to at least one grade',
+        message: 'Subject must be assigned to at least one grade',
       },
     },
 
@@ -214,10 +194,7 @@ const subjectSchema = new mongoose.Schema(
     color: {
       type: String,
       default: '#6366f1',
-      match: [
-        /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/,
-        'Invalid color hex code',
-      ],
+      match: [/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Invalid color hex code'],
     },
 
     // Background color
@@ -243,15 +220,7 @@ const subjectSchema = new mongoose.Schema(
     // Preferred room type for this subject
     preferredRoomType: {
       type: String,
-      enum: [
-        'Classroom',
-        'Laboratory',
-        'Computer Lab',
-        'Library',
-        'Sports Field',
-        'Any',
-        '',
-      ],
+      enum: ['Classroom', 'Laboratory', 'Computer Lab', 'Library', 'Sports Field', 'Any', ''],
       default: 'Classroom',
     },
 
@@ -299,10 +268,7 @@ const subjectSchema = new mongoose.Schema(
     notes: {
       type: String,
       trim: true,
-      maxlength: [
-        1000,
-        'Notes cannot exceed 1000 characters',
-      ],
+      maxlength: [1000, 'Notes cannot exceed 1000 characters'],
     },
 
     // ─── Curriculum Reference ─────────────────
@@ -357,42 +323,28 @@ subjectSchema.index({
 
 // ─── Virtuals ─────────────────────────────────
 // Is stream-specific
-subjectSchema.virtual('isStreamSpecific').get(
-  function () {
-    return !!this.stream;
-  }
-);
+subjectSchema.virtual('isStreamSpecific').get(function () {
+  return !!this.stream;
+});
 
 // Total score possible
-subjectSchema.virtual('totalPossibleScore').get(
-  function () {
-    return (
-      this.assessmentConfig.maxCAScore +
-      this.assessmentConfig.maxExamScore
-    );
-  }
-);
+subjectSchema.virtual('totalPossibleScore').get(function () {
+  return this.assessmentConfig.maxCAScore + this.assessmentConfig.maxExamScore;
+});
 
 // Display label with code
-subjectSchema.virtual('displayLabel').get(
-  function () {
-    return `${this.name} (${this.code})`;
-  }
-);
+subjectSchema.virtual('displayLabel').get(function () {
+  return `${this.name} (${this.code})`;
+});
 
 // Grade range display
 subjectSchema.virtual('gradeRange').get(function () {
-  if (!this.grades || this.grades.length === 0)
-    return 'N/A';
+  if (!this.grades || this.grades.length === 0) return 'N/A';
   if (this.grades.length === 1) return this.grades[0];
-  const nums = this.grades.map((g) =>
-    parseInt(g.replace('Grade ', ''))
-  );
+  const nums = this.grades.map((g) => parseInt(g.replace('Grade ', '')));
   const min = Math.min(...nums);
   const max = Math.max(...nums);
-  return min === max
-    ? `Grade ${min}`
-    : `Grade ${min} - ${max}`;
+  return min === max ? `Grade ${min}` : `Grade ${min} - ${max}`;
 });
 
 // ─── Pre-Save Hook ────────────────────────────
@@ -407,15 +359,9 @@ subjectSchema.pre('save', function (next) {
     this.isModified('assessmentConfig.caWeight') ||
     this.isModified('assessmentConfig.examWeight')
   ) {
-    const total =
-      this.assessmentConfig.caWeight +
-      this.assessmentConfig.examWeight;
+    const total = this.assessmentConfig.caWeight + this.assessmentConfig.examWeight;
     if (total !== 100) {
-      return next(
-        new Error(
-          'CA weight and Exam weight must sum to 100%'
-        )
-      );
+      return next(new Error('CA weight and Exam weight must sum to 100%'));
     }
   }
 
@@ -425,71 +371,66 @@ subjectSchema.pre('save', function (next) {
 // ─── Static Methods ───────────────────────────
 
 // Seed default subjects from constants
-subjectSchema.statics.seedDefaultSubjects =
-  async function () {
-    const subjectsToSeed = SUBJECTS.map(
-      (subject, index) => ({
-        name: subject.name,
-        code: subject.code,
-        grades: subject.grades,
-        stream: subject.stream || '',
-        weeklyHours: subject.weeklyHours,
-        periodsPerWeek: subject.weeklyHours,
-        requiresLab: subject.requiresLab || false,
-        color: subject.color,
-        bgColor: `${subject.color}20`,
-        icon: subject.icon,
-        sortOrder: index + 1,
-        isActive: true,
-        isSystem: true,
-        includeInGPA: subject.name !== 'Physical Education',
-        isMandatory: true,
-        preferredRoomType: subject.requiresLab
-          ? 'Laboratory'
-          : subject.code === 'ICT'
-          ? 'Computer Lab'
-          : subject.code === 'PE'
+subjectSchema.statics.seedDefaultSubjects = async function () {
+  const subjectsToSeed = SUBJECTS.map((subject, index) => ({
+    name: subject.name,
+    code: subject.code,
+    grades: subject.grades,
+    stream: subject.stream || '',
+    weeklyHours: subject.weeklyHours,
+    periodsPerWeek: subject.weeklyHours,
+    requiresLab: subject.requiresLab || false,
+    color: subject.color,
+    bgColor: `${subject.color}20`,
+    icon: subject.icon,
+    sortOrder: index + 1,
+    isActive: true,
+    isSystem: true,
+    includeInGPA: subject.name !== 'Physical Education',
+    isMandatory: true,
+    preferredRoomType: subject.requiresLab
+      ? 'Laboratory'
+      : subject.code === 'ICT'
+        ? 'Computer Lab'
+        : subject.code === 'PE'
           ? 'Sports Field'
           : 'Classroom',
-        assessmentConfig: {
-          caWeight: 50,
-          examWeight: 50,
-          maxCAScore: 50,
-          maxExamScore: 50,
-          passingScore: 50,
-          caComponents: [
-            {
-              name: 'Test 1',
-              maxScore: 20,
-              weight: 40,
-            },
-            {
-              name: 'Assignment',
-              maxScore: 15,
-              weight: 30,
-            },
-            {
-              name: 'Quiz',
-              maxScore: 15,
-              weight: 30,
-            },
-          ],
+    assessmentConfig: {
+      caWeight: 50,
+      examWeight: 50,
+      maxCAScore: 50,
+      maxExamScore: 50,
+      passingScore: 50,
+      caComponents: [
+        {
+          name: 'Test 1',
+          maxScore: 20,
+          weight: 40,
         },
-      })
-    );
+        {
+          name: 'Assignment',
+          maxScore: 15,
+          weight: 30,
+        },
+        {
+          name: 'Quiz',
+          maxScore: 15,
+          weight: 30,
+        },
+      ],
+    },
+  }));
 
-    for (const subject of subjectsToSeed) {
-      await this.findOneAndUpdate(
-        { code: subject.code },
-        { $setOnInsert: subject },
-        { upsert: true, new: true }
-      );
-    }
-
-    console.info(
-      `✅ ${subjectsToSeed.length} subjects seeded`
+  for (const subject of subjectsToSeed) {
+    await this.findOneAndUpdate(
+      { code: subject.code },
+      { $setOnInsert: subject },
+      { upsert: true, new: true }
     );
-  };
+  }
+
+  console.info(`✅ ${subjectsToSeed.length} subjects seeded`);
+};
 
 // Find subject by code
 subjectSchema.statics.findByCode = function (code) {
@@ -500,10 +441,7 @@ subjectSchema.statics.findByCode = function (code) {
 };
 
 // Find subjects for a grade level
-subjectSchema.statics.findForGrade = function (
-  grade,
-  stream = ''
-) {
+subjectSchema.statics.findForGrade = function (grade, stream = '') {
   const query = {
     grades: grade,
     isActive: true,
@@ -511,18 +449,12 @@ subjectSchema.statics.findForGrade = function (
 
   // Add stream filter
   if (stream) {
-    query.$or = [
-      { stream: stream },
-      { stream: '' },
-    ];
+    query.$or = [{ stream: stream }, { stream: '' }];
   }
 
   return this.find(query)
     .sort({ sortOrder: 1, name: 1 })
-    .populate(
-      'defaultTeacher',
-      'firstName fatherName'
-    );
+    .populate('defaultTeacher', 'firstName fatherName');
 };
 
 // Find subjects requiring lab
@@ -537,10 +469,7 @@ subjectSchema.statics.findLabSubjects = function () {
 subjectSchema.statics.getAllActive = function () {
   return this.find({ isActive: true })
     .sort({ sortOrder: 1, name: 1 })
-    .populate(
-      'defaultTeacher',
-      'firstName fatherName'
-    );
+    .populate('defaultTeacher', 'firstName fatherName');
 };
 
 // Search subjects
@@ -565,184 +494,147 @@ subjectSchema.statics.search = function (searchTerm) {
 };
 
 // Assign default teacher to subject
-subjectSchema.statics.assignTeacher =
-  async function (subjectId, teacherId) {
-    return this.findByIdAndUpdate(
-      subjectId,
-      {
-        defaultTeacher: teacherId,
-        $addToSet: {
-          qualifiedTeachers: teacherId,
-        },
+subjectSchema.statics.assignTeacher = async function (subjectId, teacherId) {
+  return this.findByIdAndUpdate(
+    subjectId,
+    {
+      defaultTeacher: teacherId,
+      $addToSet: {
+        qualifiedTeachers: teacherId,
       },
-      { new: true }
-    );
-  };
+    },
+    { new: true }
+  );
+};
 
 // Add qualified teacher
-subjectSchema.statics.addQualifiedTeacher =
-  async function (subjectId, teacherId) {
-    return this.findByIdAndUpdate(
-      subjectId,
-      {
-        $addToSet: {
-          qualifiedTeachers: teacherId,
-        },
+subjectSchema.statics.addQualifiedTeacher = async function (subjectId, teacherId) {
+  return this.findByIdAndUpdate(
+    subjectId,
+    {
+      $addToSet: {
+        qualifiedTeachers: teacherId,
       },
-      { new: true }
-    );
-  };
+    },
+    { new: true }
+  );
+};
 
 // Remove qualified teacher
-subjectSchema.statics.removeQualifiedTeacher =
-  async function (subjectId, teacherId) {
-    return this.findByIdAndUpdate(
-      subjectId,
-      {
-        $pull: { qualifiedTeachers: teacherId },
-      },
-      { new: true }
-    );
-  };
+subjectSchema.statics.removeQualifiedTeacher = async function (subjectId, teacherId) {
+  return this.findByIdAndUpdate(
+    subjectId,
+    {
+      $pull: { qualifiedTeachers: teacherId },
+    },
+    { new: true }
+  );
+};
 
 // Update stats for a subject
-subjectSchema.statics.updateStats =
-  async function (subjectId) {
-    const ExamResult = mongoose.model('ExamResult');
+subjectSchema.statics.updateStats = async function (subjectId) {
+  const ExamResult = mongoose.model('ExamResult');
 
-    const stats = await ExamResult.aggregate([
-      {
-        $match: {
-          subject:
-            new mongoose.Types.ObjectId(subjectId),
-        },
+  const stats = await ExamResult.aggregate([
+    {
+      $match: {
+        subject: new mongoose.Types.ObjectId(subjectId),
       },
-      {
-        $group: {
-          _id: null,
-          avgScore: { $avg: '$totalScore' },
-          passCount: {
-            $sum: {
-              $cond: [
-                { $gte: ['$totalScore', 50] },
-                1,
-                0,
-              ],
-            },
+    },
+    {
+      $group: {
+        _id: null,
+        avgScore: { $avg: '$totalScore' },
+        passCount: {
+          $sum: {
+            $cond: [{ $gte: ['$totalScore', 50] }, 1, 0],
           },
-          totalCount: { $sum: 1 },
         },
+        totalCount: { $sum: 1 },
       },
-    ]);
+    },
+  ]);
 
-    if (stats.length === 0) return;
+  if (stats.length === 0) return;
 
-    const { avgScore, passCount, totalCount } =
-      stats[0];
+  const { avgScore, passCount, totalCount } = stats[0];
 
-    return this.findByIdAndUpdate(
-      subjectId,
-      {
-        'stats.averageScore': Math.round(
-          avgScore || 0
-        ),
-        'stats.passRate':
-          totalCount > 0
-            ? Math.round(
-                (passCount / totalCount) * 100
-              )
-            : 0,
-        'stats.totalStudentsTaught': totalCount,
-        'stats.lastUpdated': new Date(),
-      },
-      { new: true }
-    );
-  };
+  return this.findByIdAndUpdate(
+    subjectId,
+    {
+      'stats.averageScore': Math.round(avgScore || 0),
+      'stats.passRate': totalCount > 0 ? Math.round((passCount / totalCount) * 100) : 0,
+      'stats.totalStudentsTaught': totalCount,
+      'stats.lastUpdated': new Date(),
+    },
+    { new: true }
+  );
+};
 
 // Get subject performance comparison
-subjectSchema.statics.getPerformanceComparison =
-  async function (academicYearId, termId) {
-    const ExamResult = mongoose.model('ExamResult');
+subjectSchema.statics.getPerformanceComparison = async function (academicYearId, termId) {
+  const ExamResult = mongoose.model('ExamResult');
 
-    return ExamResult.aggregate([
-      {
-        $match: {
-          ...(academicYearId && {
-            academicYear:
-              new mongoose.Types.ObjectId(
-                academicYearId
-              ),
-          }),
-          ...(termId && {
-            term: new mongoose.Types.ObjectId(termId),
-          }),
-        },
+  return ExamResult.aggregate([
+    {
+      $match: {
+        ...(academicYearId && {
+          academicYear: new mongoose.Types.ObjectId(academicYearId),
+        }),
+        ...(termId && {
+          term: new mongoose.Types.ObjectId(termId),
+        }),
       },
-      {
-        $group: {
-          _id: '$subject',
-          avgScore: { $avg: '$totalScore' },
-          passCount: {
-            $sum: {
-              $cond: [
-                { $gte: ['$totalScore', 50] },
-                1,
-                0,
-              ],
-            },
+    },
+    {
+      $group: {
+        _id: '$subject',
+        avgScore: { $avg: '$totalScore' },
+        passCount: {
+          $sum: {
+            $cond: [{ $gte: ['$totalScore', 50] }, 1, 0],
           },
-          totalCount: { $sum: 1 },
         },
+        totalCount: { $sum: 1 },
       },
-      {
-        $lookup: {
-          from: 'subjects',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'subjectData',
+    },
+    {
+      $lookup: {
+        from: 'subjects',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'subjectData',
+      },
+    },
+    { $unwind: '$subjectData' },
+    {
+      $project: {
+        subjectName: '$subjectData.name',
+        subjectCode: '$subjectData.code',
+        color: '$subjectData.color',
+        avgScore: { $round: ['$avgScore', 1] },
+        passRate: {
+          $multiply: [{ $divide: ['$passCount', '$totalCount'] }, 100],
         },
+        totalStudents: '$totalCount',
       },
-      { $unwind: '$subjectData' },
-      {
-        $project: {
-          subjectName: '$subjectData.name',
-          subjectCode: '$subjectData.code',
-          color: '$subjectData.color',
-          avgScore: { $round: ['$avgScore', 1] },
-          passRate: {
-            $multiply: [
-              { $divide: ['$passCount', '$totalCount'] },
-              100,
-            ],
-          },
-          totalStudents: '$totalCount',
-        },
-      },
-      { $sort: { avgScore: -1 } },
-    ]);
-  };
+    },
+    { $sort: { avgScore: -1 } },
+  ]);
+};
 
 // Get subjects with teacher assignments
-subjectSchema.statics.getWithTeachers =
-  async function () {
-    return this.find({ isActive: true })
-      .sort({ sortOrder: 1 })
-      .populate(
-        'defaultTeacher',
-        'firstName fatherName teacherId primarySubject'
-      )
-      .populate(
-        'qualifiedTeachers',
-        'firstName fatherName teacherId'
-      );
-  };
+subjectSchema.statics.getWithTeachers = async function () {
+  return this.find({ isActive: true })
+    .sort({ sortOrder: 1 })
+    .populate('defaultTeacher', 'firstName fatherName teacherId primarySubject')
+    .populate('qualifiedTeachers', 'firstName fatherName teacherId');
+};
 
 // ─── Instance Methods ─────────────────────────
 
 // Check if subject is taught in a grade
-subjectSchema.methods.isTaughtInGrade = function (
-  grade
-) {
+subjectSchema.methods.isTaughtInGrade = function (grade) {
   return this.grades.includes(grade);
 };
 
@@ -754,24 +646,15 @@ subjectSchema.methods.isForStream = function (stream) {
 
 // Get maximum possible score
 subjectSchema.methods.getMaxScore = function () {
-  return (
-    this.assessmentConfig.maxCAScore +
-    this.assessmentConfig.maxExamScore
-  );
+  return this.assessmentConfig.maxCAScore + this.assessmentConfig.maxExamScore;
 };
 
 // Calculate letter grade from score
-subjectSchema.methods.calculateGrade = function (
-  score
-) {
-  const percentage =
-    (score / this.getMaxScore()) * 100;
-  if (percentage >= 85)
-    return { grade: 'A', gpa: 4.0, remark: 'Excellent' };
-  if (percentage >= 75)
-    return { grade: 'B', gpa: 3.0, remark: 'Very Good' };
-  if (percentage >= 65)
-    return { grade: 'C', gpa: 2.0, remark: 'Good' };
+subjectSchema.methods.calculateGrade = function (score) {
+  const percentage = (score / this.getMaxScore()) * 100;
+  if (percentage >= 85) return { grade: 'A', gpa: 4.0, remark: 'Excellent' };
+  if (percentage >= 75) return { grade: 'B', gpa: 3.0, remark: 'Very Good' };
+  if (percentage >= 65) return { grade: 'C', gpa: 2.0, remark: 'Good' };
   if (percentage >= 50)
     return {
       grade: 'D',
