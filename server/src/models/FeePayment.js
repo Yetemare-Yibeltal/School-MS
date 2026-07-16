@@ -7,7 +7,11 @@
 'use strict';
 
 const mongoose = require('mongoose');
-const { PAYMENT_METHODS, PAYMENT_STATUS, GRADE_NAMES } = require('../config/constants');
+const {
+  PAYMENT_METHODS,
+  PAYMENT_STATUS,
+  GRADE_NAMES,
+} = require('../config/constants');
 
 const feePaymentSchema = new mongoose.Schema(
   {
@@ -222,7 +226,13 @@ const feePaymentSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Status is required'],
       enum: {
-        values: ['completed', 'pending', 'failed', 'cancelled', 'refunded'],
+        values: [
+          'completed',
+          'pending',
+          'failed',
+          'cancelled',
+          'refunded',
+        ],
         message: '{VALUE} is not a valid status',
       },
       default: 'completed',
@@ -371,7 +381,10 @@ const feePaymentSchema = new mongoose.Schema(
     notes: {
       type: String,
       trim: true,
-      maxlength: [500, 'Notes cannot exceed 500 characters'],
+      maxlength: [
+        500,
+        'Notes cannot exceed 500 characters',
+      ],
     },
 
     // ─── Audit ───────────────────────────────
@@ -395,7 +408,10 @@ const feePaymentSchema = new mongoose.Schema(
 );
 
 // ─── Indexes ──────────────────────────────────
-feePaymentSchema.index({ receiptNumber: 1 }, { unique: true });
+feePaymentSchema.index(
+  { receiptNumber: 1 },
+  { unique: true }
+);
 feePaymentSchema.index({
   student: 1,
   academicYear: 1,
@@ -418,25 +434,33 @@ feePaymentSchema.index({ createdAt: -1 });
 
 // ─── Virtuals ─────────────────────────────────
 // Is full payment
-feePaymentSchema.virtual('isFullPayment').get(function () {
-  return this.remainingBalance <= 0;
-});
+feePaymentSchema.virtual('isFullPayment').get(
+  function () {
+    return this.remainingBalance <= 0;
+  }
+);
 
 // Payment date formatted
-feePaymentSchema.virtual('formattedDate').get(function () {
-  if (!this.paymentDate) return '';
-  return new Date(this.paymentDate).toLocaleDateString('en-ET', {
-    weekday: 'short',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-});
+feePaymentSchema.virtual('formattedDate').get(
+  function () {
+    if (!this.paymentDate) return '';
+    return new Date(
+      this.paymentDate
+    ).toLocaleDateString('en-ET', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }
+);
 
 // Formatted amount
-feePaymentSchema.virtual('formattedAmount').get(function () {
-  return `ETB ${this.amount.toLocaleString()}`;
-});
+feePaymentSchema.virtual('formattedAmount').get(
+  function () {
+    return `ETB ${this.amount.toLocaleString()}`;
+  }
+);
 
 // ─── Pre-Save Hook ────────────────────────────
 // Auto-generate receipt number
@@ -445,17 +469,27 @@ feePaymentSchema.pre('save', async function (next) {
     try {
       const today = new Date();
       const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
+      const month = String(
+        today.getMonth() + 1
+      ).padStart(2, '0');
+      const day = String(today.getDate()).padStart(
+        2,
+        '0'
+      );
 
       // Count today's payments for sequential number
       const todayStart = new Date(today);
       todayStart.setHours(0, 0, 0, 0);
-      const count = await mongoose.model('FeePayment').countDocuments({
-        createdAt: { $gte: todayStart },
-      });
+      const count = await mongoose
+        .model('FeePayment')
+        .countDocuments({
+          createdAt: { $gte: todayStart },
+        });
 
-      const sequence = String(count + 1).padStart(4, '0');
+      const sequence = String(count + 1).padStart(
+        4,
+        '0'
+      );
       this.receiptNumber = `RCP-${year}${month}${day}-${sequence}`;
     } catch (error) {
       next(error);
@@ -464,9 +498,17 @@ feePaymentSchema.pre('save', async function (next) {
   }
 
   // Auto-calculate total paid and balance
-  if (this.isModified('amount') || this.isModified('previousAmountPaid')) {
-    this.totalAmountPaid = (this.previousAmountPaid || 0) + (this.amount || 0);
-    this.remainingBalance = Math.max(0, this.netAmount - this.totalAmountPaid);
+  if (
+    this.isModified('amount') ||
+    this.isModified('previousAmountPaid')
+  ) {
+    this.totalAmountPaid =
+      (this.previousAmountPaid || 0) +
+      (this.amount || 0);
+    this.remainingBalance = Math.max(
+      0,
+      this.netAmount - this.totalAmountPaid
+    );
   }
 
   next();
@@ -475,393 +517,477 @@ feePaymentSchema.pre('save', async function (next) {
 // ─── Static Methods ───────────────────────────
 
 // Generate receipt number manually
-feePaymentSchema.statics.generateReceiptNumber = async function () {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
+feePaymentSchema.statics.generateReceiptNumber =
+  async function () {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(
+      today.getMonth() + 1
+    ).padStart(2, '0');
+    const day = String(today.getDate()).padStart(
+      2,
+      '0'
+    );
 
-  const todayStart = new Date(today);
-  todayStart.setHours(0, 0, 0, 0);
+    const todayStart = new Date(today);
+    todayStart.setHours(0, 0, 0, 0);
 
-  const count = await this.countDocuments({
-    createdAt: { $gte: todayStart },
-  });
+    const count = await this.countDocuments({
+      createdAt: { $gte: todayStart },
+    });
 
-  const sequence = String(count + 1).padStart(4, '0');
-  return `RCP-${year}${month}${day}-${sequence}`;
-};
-
-// Get payments for a student
-feePaymentSchema.statics.getForStudent = function (studentId, academicYearId) {
-  return this.find({
-    student: studentId,
-    academicYear: academicYearId,
-    status: 'completed',
-  })
-    .sort({ paymentDate: -1 })
-    .populate('feeType', 'name code color')
-    .populate('collectedBy', 'firstName fatherName');
-};
-
-// Get payments for a fee assignment
-feePaymentSchema.statics.getForAssignment = function (assignmentId) {
-  return this.find({
-    feeAssignment: assignmentId,
-    status: 'completed',
-  })
-    .sort({ paymentDate: -1 })
-    .populate('collectedBy', 'firstName fatherName');
-};
-
-// Get today's payments
-feePaymentSchema.statics.getTodayPayments = function (academicYearId) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-
-  return this.find({
-    academicYear: academicYearId,
-    paymentDate: {
-      $gte: today,
-      $lt: tomorrow,
-    },
-    status: 'completed',
-  })
-    .sort({ paymentDate: -1 })
-    .populate('student', 'firstName fatherName studentId')
-    .populate('feeType', 'name code')
-    .populate('collectedBy', 'firstName fatherName');
-};
-
-// Get payments by date range
-feePaymentSchema.statics.getByDateRange = function (
-  startDate,
-  endDate,
-  academicYearId,
-  filters = {}
-) {
-  return this.find({
-    academicYear: academicYearId,
-    paymentDate: {
-      $gte: new Date(startDate),
-      $lte: new Date(endDate),
-    },
-    status: 'completed',
-    ...filters,
-  })
-    .sort({ paymentDate: -1 })
-    .populate('student', 'firstName fatherName studentId grade')
-    .populate('feeType', 'name code')
-    .populate('collectedBy', 'firstName fatherName');
-};
-
-// Get payment summary by method
-feePaymentSchema.statics.getSummaryByMethod = async function (
-  academicYearId,
-  startDate = null,
-  endDate = null
-) {
-  const match = {
-    academicYear: new mongoose.Types.ObjectId(academicYearId),
-    status: 'completed',
+    const sequence = String(count + 1).padStart(
+      4,
+      '0'
+    );
+    return `RCP-${year}${month}${day}-${sequence}`;
   };
 
-  if (startDate || endDate) {
-    match.paymentDate = {};
-    if (startDate) match.paymentDate.$gte = new Date(startDate);
-    if (endDate) match.paymentDate.$lte = new Date(endDate);
-  }
+// Get payments for a student
+feePaymentSchema.statics.getForStudent =
+  function (studentId, academicYearId) {
+    return this.find({
+      student: studentId,
+      academicYear: academicYearId,
+      status: 'completed',
+    })
+      .sort({ paymentDate: -1 })
+      .populate('feeType', 'name code color')
+      .populate(
+        'collectedBy',
+        'firstName fatherName'
+      );
+  };
 
-  return this.aggregate([
-    { $match: match },
-    {
-      $group: {
-        _id: '$method',
-        count: { $sum: 1 },
-        totalAmount: { $sum: '$amount' },
-        avgAmount: { $avg: '$amount' },
+// Get payments for a fee assignment
+feePaymentSchema.statics.getForAssignment =
+  function (assignmentId) {
+    return this.find({
+      feeAssignment: assignmentId,
+      status: 'completed',
+    })
+      .sort({ paymentDate: -1 })
+      .populate(
+        'collectedBy',
+        'firstName fatherName'
+      );
+  };
+
+// Get today's payments
+feePaymentSchema.statics.getTodayPayments =
+  function (academicYearId) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    return this.find({
+      academicYear: academicYearId,
+      paymentDate: {
+        $gte: today,
+        $lt: tomorrow,
       },
-    },
-    { $sort: { totalAmount: -1 } },
-  ]);
-};
+      status: 'completed',
+    })
+      .sort({ paymentDate: -1 })
+      .populate(
+        'student',
+        'firstName fatherName studentId'
+      )
+      .populate('feeType', 'name code')
+      .populate(
+        'collectedBy',
+        'firstName fatherName'
+      );
+  };
+
+// Get payments by date range
+feePaymentSchema.statics.getByDateRange =
+  function (
+    startDate,
+    endDate,
+    academicYearId,
+    filters = {}
+  ) {
+    return this.find({
+      academicYear: academicYearId,
+      paymentDate: {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      },
+      status: 'completed',
+      ...filters,
+    })
+      .sort({ paymentDate: -1 })
+      .populate(
+        'student',
+        'firstName fatherName studentId grade'
+      )
+      .populate('feeType', 'name code')
+      .populate(
+        'collectedBy',
+        'firstName fatherName'
+      );
+  };
+
+// Get payment summary by method
+feePaymentSchema.statics.getSummaryByMethod =
+  async function (
+    academicYearId,
+    startDate = null,
+    endDate = null
+  ) {
+    const match = {
+      academicYear: new mongoose.Types.ObjectId(
+        academicYearId
+      ),
+      status: 'completed',
+    };
+
+    if (startDate || endDate) {
+      match.paymentDate = {};
+      if (startDate)
+        match.paymentDate.$gte = new Date(startDate);
+      if (endDate)
+        match.paymentDate.$lte = new Date(endDate);
+    }
+
+    return this.aggregate([
+      { $match: match },
+      {
+        $group: {
+          _id: '$method',
+          count: { $sum: 1 },
+          totalAmount: { $sum: '$amount' },
+          avgAmount: { $avg: '$amount' },
+        },
+      },
+      { $sort: { totalAmount: -1 } },
+    ]);
+  };
 
 // Get daily collection totals
-feePaymentSchema.statics.getDailyCollections = async function (academicYearId, month, year) {
-  const startDate = new Date(year, month - 1, 1);
-  const endDate = new Date(year, month, 0);
+feePaymentSchema.statics.getDailyCollections =
+  async function (
+    academicYearId,
+    month,
+    year
+  ) {
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
 
-  return this.aggregate([
-    {
-      $match: {
-        academicYear: new mongoose.Types.ObjectId(academicYearId),
-        paymentDate: {
-          $gte: startDate,
-          $lte: endDate,
-        },
-        status: 'completed',
-      },
-    },
-    {
-      $group: {
-        _id: {
-          day: { $dayOfMonth: '$paymentDate' },
-          month: { $month: '$paymentDate' },
-          year: { $year: '$paymentDate' },
-        },
-        totalAmount: { $sum: '$amount' },
-        count: { $sum: 1 },
-      },
-    },
-    { $sort: { '_id.day': 1 } },
-  ]);
-};
-
-// Get monthly collection summary
-feePaymentSchema.statics.getMonthlyCollections = async function (academicYearId) {
-  return this.aggregate([
-    {
-      $match: {
-        academicYear: new mongoose.Types.ObjectId(academicYearId),
-        status: 'completed',
-      },
-    },
-    {
-      $group: {
-        _id: {
-          month: { $month: '$paymentDate' },
-          year: { $year: '$paymentDate' },
-        },
-        totalAmount: { $sum: '$amount' },
-        count: { $sum: 1 },
-        uniqueStudents: {
-          $addToSet: '$student',
-        },
-      },
-    },
-    {
-      $addFields: {
-        uniqueStudentCount: {
-          $size: '$uniqueStudents',
-        },
-      },
-    },
-    {
-      $sort: {
-        '_id.year': 1,
-        '_id.month': 1,
-      },
-    },
-  ]);
-};
-
-// Get payments by collector (cashier report)
-feePaymentSchema.statics.getByCollector = async function (collectorId, startDate, endDate) {
-  return this.aggregate([
-    {
-      $match: {
-        collectedBy: new mongoose.Types.ObjectId(collectorId),
-        paymentDate: {
-          $gte: new Date(startDate),
-          $lte: new Date(endDate),
-        },
-        status: 'completed',
-      },
-    },
-    {
-      $group: {
-        _id: '$method',
-        count: { $sum: 1 },
-        totalAmount: { $sum: '$amount' },
-      },
-    },
-  ]);
-};
-
-// Get payment trend for AI analysis
-feePaymentSchema.statics.getStudentPaymentTrend = async function (studentId, academicYearId) {
-  return this.aggregate([
-    {
-      $match: {
-        student: new mongoose.Types.ObjectId(studentId),
-        academicYear: new mongoose.Types.ObjectId(academicYearId),
-        status: 'completed',
-      },
-    },
-    {
-      $group: {
-        _id: {
-          month: { $month: '$paymentDate' },
-          year: { $year: '$paymentDate' },
-        },
-        totalPaid: { $sum: '$amount' },
-        paymentCount: { $sum: 1 },
-        methods: { $addToSet: '$method' },
-      },
-    },
-    { $sort: { '_id.year': 1, '_id.month': 1 } },
-  ]);
-};
-
-// Get dashboard stats
-feePaymentSchema.statics.getDashboardStats = async function (academicYearId) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-
-  const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-
-  const [todayStats, monthStats, yearStats, byMethod] = await Promise.all([
-    this.aggregate([
+    return this.aggregate([
       {
         $match: {
-          academicYear: new mongoose.Types.ObjectId(academicYearId),
+          academicYear: new mongoose.Types.ObjectId(
+            academicYearId
+          ),
           paymentDate: {
-            $gte: today,
-            $lt: tomorrow,
+            $gte: startDate,
+            $lte: endDate,
           },
           status: 'completed',
         },
       },
       {
         $group: {
-          _id: null,
-          total: { $sum: '$amount' },
+          _id: {
+            day: { $dayOfMonth: '$paymentDate' },
+            month: { $month: '$paymentDate' },
+            year: { $year: '$paymentDate' },
+          },
+          totalAmount: { $sum: '$amount' },
           count: { $sum: 1 },
         },
       },
-    ]),
-    this.aggregate([
+      { $sort: { '_id.day': 1 } },
+    ]);
+  };
+
+// Get monthly collection summary
+feePaymentSchema.statics.getMonthlyCollections =
+  async function (academicYearId) {
+    return this.aggregate([
       {
         $match: {
-          academicYear: new mongoose.Types.ObjectId(academicYearId),
-          paymentDate: { $gte: thisMonth },
+          academicYear: new mongoose.Types.ObjectId(
+            academicYearId
+          ),
           status: 'completed',
         },
       },
       {
         $group: {
-          _id: null,
-          total: { $sum: '$amount' },
+          _id: {
+            month: { $month: '$paymentDate' },
+            year: { $year: '$paymentDate' },
+          },
+          totalAmount: { $sum: '$amount' },
           count: { $sum: 1 },
+          uniqueStudents: {
+            $addToSet: '$student',
+          },
         },
       },
-    ]),
-    this.aggregate([
+      {
+        $addFields: {
+          uniqueStudentCount: {
+            $size: '$uniqueStudents',
+          },
+        },
+      },
+      {
+        $sort: {
+          '_id.year': 1,
+          '_id.month': 1,
+        },
+      },
+    ]);
+  };
+
+// Get payments by collector (cashier report)
+feePaymentSchema.statics.getByCollector =
+  async function (
+    collectorId,
+    startDate,
+    endDate
+  ) {
+    return this.aggregate([
       {
         $match: {
-          academicYear: new mongoose.Types.ObjectId(academicYearId),
-          status: 'completed',
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: '$amount' },
-          count: { $sum: 1 },
-        },
-      },
-    ]),
-    this.aggregate([
-      {
-        $match: {
-          academicYear: new mongoose.Types.ObjectId(academicYearId),
+          collectedBy: new mongoose.Types.ObjectId(
+            collectorId
+          ),
+          paymentDate: {
+            $gte: new Date(startDate),
+            $lte: new Date(endDate),
+          },
           status: 'completed',
         },
       },
       {
         $group: {
           _id: '$method',
-          total: { $sum: '$amount' },
           count: { $sum: 1 },
+          totalAmount: { $sum: '$amount' },
         },
       },
-      { $sort: { total: -1 } },
-    ]),
-  ]);
-
-  return {
-    today: todayStats[0] || { total: 0, count: 0 },
-    month: monthStats[0] || { total: 0, count: 0 },
-    year: yearStats[0] || { total: 0, count: 0 },
-    byMethod,
+    ]);
   };
-};
+
+// Get payment trend for AI analysis
+feePaymentSchema.statics.getStudentPaymentTrend =
+  async function (studentId, academicYearId) {
+    return this.aggregate([
+      {
+        $match: {
+          student: new mongoose.Types.ObjectId(
+            studentId
+          ),
+          academicYear: new mongoose.Types.ObjectId(
+            academicYearId
+          ),
+          status: 'completed',
+        },
+      },
+      {
+        $group: {
+          _id: {
+            month: { $month: '$paymentDate' },
+            year: { $year: '$paymentDate' },
+          },
+          totalPaid: { $sum: '$amount' },
+          paymentCount: { $sum: 1 },
+          methods: { $addToSet: '$method' },
+        },
+      },
+      { $sort: { '_id.year': 1, '_id.month': 1 } },
+    ]);
+  };
+
+// Get dashboard stats
+feePaymentSchema.statics.getDashboardStats =
+  async function (academicYearId) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const thisMonth = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      1
+    );
+
+    const [
+      todayStats,
+      monthStats,
+      yearStats,
+      byMethod,
+    ] = await Promise.all([
+      this.aggregate([
+        {
+          $match: {
+            academicYear: new mongoose.Types.ObjectId(
+              academicYearId
+            ),
+            paymentDate: {
+              $gte: today,
+              $lt: tomorrow,
+            },
+            status: 'completed',
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$amount' },
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+      this.aggregate([
+        {
+          $match: {
+            academicYear: new mongoose.Types.ObjectId(
+              academicYearId
+            ),
+            paymentDate: { $gte: thisMonth },
+            status: 'completed',
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$amount' },
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+      this.aggregate([
+        {
+          $match: {
+            academicYear: new mongoose.Types.ObjectId(
+              academicYearId
+            ),
+            status: 'completed',
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$amount' },
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+      this.aggregate([
+        {
+          $match: {
+            academicYear: new mongoose.Types.ObjectId(
+              academicYearId
+            ),
+            status: 'completed',
+          },
+        },
+        {
+          $group: {
+            _id: '$method',
+            total: { $sum: '$amount' },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { total: -1 } },
+      ]),
+    ]);
+
+    return {
+      today: todayStats[0] || { total: 0, count: 0 },
+      month: monthStats[0] || { total: 0, count: 0 },
+      year: yearStats[0] || { total: 0, count: 0 },
+      byMethod,
+    };
+  };
 
 // ─── Instance Methods ─────────────────────────
 
 // Mark receipt as printed
-feePaymentSchema.methods.markReceiptPrinted = async function () {
-  this.receiptPrinted = true;
-  this.receiptPrintedAt = new Date();
-  await this.save({ validateBeforeSave: false });
-  return this;
-};
+feePaymentSchema.methods.markReceiptPrinted =
+  async function () {
+    this.receiptPrinted = true;
+    this.receiptPrintedAt = new Date();
+    await this.save({ validateBeforeSave: false });
+    return this;
+  };
 
 // Mark email receipt as sent
-feePaymentSchema.methods.markEmailSent = async function () {
-  this.emailReceiptSent = true;
-  this.emailReceiptSentAt = new Date();
-  await this.save({ validateBeforeSave: false });
-  return this;
-};
+feePaymentSchema.methods.markEmailSent =
+  async function () {
+    this.emailReceiptSent = true;
+    this.emailReceiptSentAt = new Date();
+    await this.save({ validateBeforeSave: false });
+    return this;
+  };
 
 // Process refund
-feePaymentSchema.methods.processRefund = async function (amount, reason, refundedBy) {
-  this.isRefunded = true;
-  this.refundAmount = amount || this.amount;
-  this.refundDate = new Date();
-  this.refundReason = reason;
-  this.refundedBy = refundedBy;
-  this.status = 'refunded';
-  await this.save();
-  return this;
-};
+feePaymentSchema.methods.processRefund =
+  async function (amount, reason, refundedBy) {
+    this.isRefunded = true;
+    this.refundAmount = amount || this.amount;
+    this.refundDate = new Date();
+    this.refundReason = reason;
+    this.refundedBy = refundedBy;
+    this.status = 'refunded';
+    await this.save();
+    return this;
+  };
 
 // Save receipt PDF
-feePaymentSchema.methods.saveReceiptPDF = async function (pdfUrl, publicId) {
-  this.receiptPdfUrl = pdfUrl;
-  this.receiptPdfPublicId = publicId;
-  await this.save({ validateBeforeSave: false });
-  return this;
-};
+feePaymentSchema.methods.saveReceiptPDF =
+  async function (pdfUrl, publicId) {
+    this.receiptPdfUrl = pdfUrl;
+    this.receiptPdfPublicId = publicId;
+    await this.save({ validateBeforeSave: false });
+    return this;
+  };
 
 // Get receipt data for printing
-feePaymentSchema.methods.getReceiptData = function () {
-  return {
-    receiptNumber: this.receiptNumber,
-    student: {
-      name: this.studentName,
-      id: this.studentId,
-      grade: this.grade,
-      section: this.sectionName,
-    },
-    payment: {
-      amount: this.amount,
-      method: this.method,
-      date: this.formattedDate,
-      transactionRef: this.transactionReference,
-      feeType: this.feeTypeName,
-      academicYear: this.academicYearName,
-      term: this.termName,
-    },
-    paidBy: this.paidBy,
-    collectedBy: this.collectedByName,
-    totals: {
-      totalFee: this.totalFeeAmount,
-      discount: this.discountAmount,
-      netAmount: this.netAmount,
-      amountPaid: this.amount,
-      totalPaid: this.totalAmountPaid,
-      balance: this.remainingBalance,
-    },
+feePaymentSchema.methods.getReceiptData =
+  function () {
+    return {
+      receiptNumber: this.receiptNumber,
+      student: {
+        name: this.studentName,
+        id: this.studentId,
+        grade: this.grade,
+        section: this.sectionName,
+      },
+      payment: {
+        amount: this.amount,
+        method: this.method,
+        date: this.formattedDate,
+        transactionRef: this.transactionReference,
+        feeType: this.feeTypeName,
+        academicYear: this.academicYearName,
+        term: this.termName,
+      },
+      paidBy: this.paidBy,
+      collectedBy: this.collectedByName,
+      totals: {
+        totalFee: this.totalFeeAmount,
+        discount: this.discountAmount,
+        netAmount: this.netAmount,
+        amountPaid: this.amount,
+        totalPaid: this.totalAmountPaid,
+        balance: this.remainingBalance,
+      },
+    };
   };
-};
 
 // ─── Create Model ─────────────────────────────
-const FeePayment = mongoose.model('FeePayment', feePaymentSchema);
+const FeePayment = mongoose.model(
+  'FeePayment',
+  feePaymentSchema
+);
 
 module.exports = FeePayment;
