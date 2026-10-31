@@ -66,7 +66,7 @@ app.use('/api/hrm',            require('./routes/hrm.routes'));
 app.use('/api/library',        require('./routes/library.routes'));
 app.use('/api/communications', require('./routes/communication.routes'));
 app.use('/api/system',         require('./routes/system.routes'));
-// app.use('/api/ai',             require('./routes/ai.routes'));
+app.use('/api/ai',             require('./routes/ai.routes'));
 
 // ─── 404 Handler ──────────────────────────────
 app.all('*', (req, res) => {
