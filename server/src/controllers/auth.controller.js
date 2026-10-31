@@ -145,7 +145,7 @@ exports.login = catchAsync(async (req, res) => {
   const isPasswordCorrect = await user.comparePassword(password);
 
   if (!isPasswordCorrect) {
-    await user.incrementLoginAttempts();
+    await user.incrementFailedLogins();
 
     const attemptsLeft =
       (parseInt(process.env.MAX_LOGIN_ATTEMPTS) || 5) -
@@ -164,7 +164,7 @@ exports.login = catchAsync(async (req, res) => {
   }
 
   // Reset login attempts on success
-  await user.resetLoginAttempts();
+  await user.resetFailedLogins(req.ip);
 
   // Update last login
   user.lastLogin = new Date();
