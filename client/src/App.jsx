@@ -37,7 +37,7 @@ const App = () => (
       </Route>
 
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
-      <Route path="*" element={<NotFoundPage />} />
+
     </Routes>
   </Suspense>
 );
