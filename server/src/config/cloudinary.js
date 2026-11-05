@@ -91,7 +91,15 @@ const deleteFromCloudinary = async (publicId, resourceType = 'image') => {
   }
 };
 
-
+const deleteMultipleFromCloudinary = async (publicIds, resourceType = 'image') => {
+  if (!cloudinaryAvailable || !publicIds || publicIds.length === 0) return { success: true, deleted: [] };
+  try {
+    const result = await cloudinary.api.delete_resources(publicIds, { resource_type: resourceType, invalidate: true });
+    return { success: true, deleted: Object.keys(result.deleted), failed: [] };
+  } catch (e) {
+    return { success: false, deleted: [], failed: publicIds };
+  }
+};
 
 const getOptimizedUrl = (publicId, transformations = {}) => {
   if (!cloudinaryAvailable || !publicId) return publicId;
