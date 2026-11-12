@@ -45,7 +45,227 @@ const verifyEmailConnection = async () => {
 };
 
 // ─── Base Email Template ──────────────────────
-
+const baseTemplate = (content, title = 'Kat Secondary School') => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${title}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background-color: #f1f5f9;
+      color: #1e293b;
+      line-height: 1.6;
+    }
+    .wrapper {
+      max-width: 600px;
+      margin: 30px auto;
+      background: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    }
+    .header {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      padding: 32px 40px;
+      text-align: center;
+    }
+    .header-flag {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .flag-stripe {
+      height: 5px;
+      width: 120px;
+    }
+    .school-logo {
+      width: 64px;
+      height: 64px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: 12px;
+      border: 2px solid rgba(255,255,255,0.3);
+    }
+    .school-name {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+    }
+    .school-location {
+      font-size: 13px;
+      color: rgba(255,255,255,0.8);
+      margin-top: 4px;
+    }
+    .ethiopian-bar {
+      display: flex;
+      height: 4px;
+    }
+    .bar-green { background: #078930; flex: 1; }
+    .bar-yellow { background: #FCDD09; flex: 1; }
+    .bar-red { background: #DA121A; flex: 1; }
+    .body {
+      padding: 40px;
+    }
+    .greeting {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 16px;
+    }
+    .message {
+      font-size: 14px;
+      color: #475569;
+      margin-bottom: 20px;
+      line-height: 1.7;
+    }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: #ffffff !important;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      margin: 16px 0;
+    }
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+    .btn-success {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+    }
+    .info-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px dashed #e2e8f0;
+      font-size: 13.5px;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #64748b; font-weight: 600; }
+    .info-value { color: #1e293b; font-weight: 700; }
+    .alert-box {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin: 20px 0;
+      font-size: 13.5px;
+      color: #92400e;
+    }
+    .alert-box.danger {
+      background: #fee2e2;
+      border-color: #ef4444;
+      color: #991b1b;
+    }
+    .alert-box.success {
+      background: #dcfce7;
+      border-color: #22c55e;
+      color: #166534;
+    }
+    .divider {
+      border: none;
+      border-top: 1px solid #e2e8f0;
+      margin: 24px 0;
+    }
+    .footer {
+      background: #f8fafc;
+      padding: 24px 40px;
+      text-align: center;
+      border-top: 1px solid #e2e8f0;
+    }
+    .footer-text {
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.7;
+    }
+    .footer-school {
+      font-size: 13px;
+      font-weight: 700;
+      color: #4f46e5;
+      margin-bottom: 4px;
+    }
+    .otp-box {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .otp-code {
+      font-size: 40px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: 12px;
+      font-family: 'Courier New', monospace;
+    }
+    .otp-label {
+      font-size: 13px;
+      color: rgba(255,255,255,0.8);
+      margin-top: 8px;
+    }
+    .receipt-total {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: white;
+      padding: 16px 20px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+    }
+    .receipt-total-label { font-size: 16px; font-weight: 700; }
+    .receipt-total-amount { font-size: 22px; font-weight: 900; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <div class="school-logo">KS</div>
+      <div class="school-name">${SCHOOL_INFO.NAME}</div>
+      <div class="school-location">Addis Ababa, Ethiopia</div>
+    </div>
+    <div class="ethiopian-bar">
+      <div class="bar-green"></div>
+      <div class="bar-yellow"></div>
+      <div class="bar-red"></div>
+    </div>
+    <div class="body">
+      ${content}
+    </div>
+    <div class="footer">
+      <div class="footer-school">${SCHOOL_INFO.NAME}</div>
+      <div class="footer-text">
+        ${SCHOOL_INFO.ADDRESS}<br/>
+        📞 ${SCHOOL_INFO.PHONE} | ✉️ ${SCHOOL_INFO.EMAIL}<br/>
+        🌐 ${SCHOOL_INFO.WEBSITE}<br/><br/>
+        This is an automated email. Please do not reply to this email.<br/>
+        © ${new Date().getFullYear()} ${SCHOOL_INFO.NAME}. All rights reserved.
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+`;
 
 // ─── Send Email Function ──────────────────────
 const sendEmail = async ({ to, subject, html, text, attachments = [] }) => {
