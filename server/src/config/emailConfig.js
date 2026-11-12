@@ -140,7 +140,9 @@ const baseTemplate = (content, title = 'Kat Secondary School') => `
       font-weight: 700;
       margin: 16px 0;
     }
-    
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
     .btn-success {
       background: linear-gradient(135deg, #22c55e, #16a34a);
     }
