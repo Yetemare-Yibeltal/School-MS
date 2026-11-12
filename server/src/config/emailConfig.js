@@ -32,17 +32,7 @@ const createTransporter = () => {
 };
 
 // ─── Verify Email Connection ──────────────────
-const verifyEmailConnection = async () => {
-  try {
-    const transporter = createTransporter();
-    await transporter.verify();
-    console.info('✅ Email server connection verified');
-    return true;
-  } catch (error) {
-    console.warn('⚠️  Email server connection failed:', error.message);
-    return false;
-  }
-};
+
 
 // ─── Base Email Template ──────────────────────
 const baseTemplate = (content, title = 'Kat Secondary School') => `
