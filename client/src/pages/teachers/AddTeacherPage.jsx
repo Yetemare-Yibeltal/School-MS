@@ -1,10 +1,16 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import toast from 'react-hot-toast'
-import api from '../../services/api'
+// ============================================
+// KAT SCHOOL MANAGEMENT SYSTEM
+// ADD TEACHER PAGE
+// kat-school/client/src/pages/teachers/AddTeacherPage.jsx
+// ============================================
 
-const GRADES = ['Grade 9', 'Grade 10', 'Grade 11', 'Grade 12']
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import api from '../../services/api';
+import toast from 'react-hot-toast';
+
+const GRADES = ['Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 const SUBJECTS = [
   'Mathematics',
   'Physics',
@@ -18,288 +24,563 @@ const SUBJECTS = [
   'Economics',
   'ICT',
   'Physical Education',
-  'Other'
-]
-const QUALIFICATIONS = ['Certificate', 'Diploma', 'Degree', 'Masters', 'PhD']
-const PHONE_RE = /^(\+251|251|0)?[79]\d{8}$/
+  'Art',
+  'Music',
+  'Other',
+];
+const QUALIFICATIONS = ['Certificate', 'Diploma', 'Degree', 'Masters', 'PhD'];
+const EMPLOYMENT_TYPES = ['Full-Time', 'Part-Time', 'Contract', 'Volunteer'];
 
-const Field = ({ label, error, required, children }) => (
-  <div className='form-group'>
-    <label className='form-label'>
-      {label} {required && <span className='text-red-500'>*</span>}
+const FormField = ({ label, required: req, error, hint, className = '', children }) => (
+  <div className={`form-group ${className}`}>
+    <label className="form-label">
+      {label} {req && <span className="text-red-500">*</span>}
     </label>
     {children}
-    {error && <p className='form-error'>{error}</p>}
+    {error && <p className="form-error">{error}</p>}
+    {hint && !error && <p className="form-hint">{hint}</p>}
   </div>
-)
+);
 
 const AddTeacherPage = () => {
-  const navigate = useNavigate()
-  const qc = useQueryClient()
-  const [errors, setErrors] = useState({})
-  const [f, setF] = useState({
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [errors, setErrors] = useState({});
+
+  const [form, setForm] = useState({
     firstName: '',
     fatherName: '',
     grandFatherName: '',
     gender: '',
     dateOfBirth: '',
+    nationality: 'Ethiopian',
+    religion: '',
+    bloodGroup: '',
     phone: '',
+    alternatePhone: '',
     email: '',
+    addressRegion: '',
+    addressWoreda: '',
+    addressKebele: '',
     primarySubject: '',
+    secondarySubjects: [],
     gradesCanTeach: [],
     qualification: '',
     fieldOfStudy: '',
     university: '',
+    yearOfGraduation: '',
     yearsOfExperience: '0',
+    teachingLicenseNumber: '',
     joinDate: new Date().toISOString().split('T')[0],
     employmentType: 'Full-Time',
-    basicSalary: ''
-  })
+    isHomeRoomTeacher: false,
+    homeRoomSection: '',
+    basicSalary: '',
+    bankName: '',
+    bankAccountNumber: '',
+    bankBranch: '',
+    tinNumber: '',
+    pensionNumber: '',
+    nationalIdNumber: '',
+    notes: '',
+  });
 
-  const set = (k, v) => {
-    setF(p => ({ ...p, [k]: v }))
-    setErrors(p => ({ ...p, [k]: null }))
-  }
-  const toggleGrade = g =>
-    set(
-      'gradesCanTeach',
-      f.gradesCanTeach.includes(g)
-        ? f.gradesCanTeach.filter(x => x !== g)
-        : [...f.gradesCanTeach, g]
-    )
-  const cls = k => (errors[k] ? 'form-input-error' : 'form-input')
-
-  const create = useMutation({
-    mutationFn: payload => api.post('/teachers', payload),
-    onSuccess: res => {
-      const t = res.data.data.teacher
-      toast.success(`Teacher created: ${t.teacherId}`)
-      qc.invalidateQueries({ queryKey: ['teachers'] })
-      navigate(`/teachers/${t._id}`)
+  const { data: sectionsData } = useQuery({
+    queryKey: ['sections-all'],
+    queryFn: async () => {
+      const res = await api.get('/academic/sections');
+      return res.data.data.sections;
     },
-    onError: err => toast.error(err.response?.data?.message || 'Could not create teacher.')
-  })
+  });
 
-  const submit = e => {
-    e.preventDefault()
-    const er = {}
-    if (!f.firstName.trim()) er.firstName = 'Required'
-    if (!f.fatherName.trim()) er.fatherName = 'Required'
-    if (!f.gender) er.gender = 'Required'
-    if (!f.dateOfBirth) er.dateOfBirth = 'Required'
-    if (!PHONE_RE.test(f.phone)) er.phone = 'Enter a valid Ethiopian phone number'
-    if (!f.primarySubject) er.primarySubject = 'Required'
-    if (f.gradesCanTeach.length === 0) er.gradesCanTeach = 'Select at least one grade'
-    if (!f.qualification) er.qualification = 'Required'
-    if (!f.fieldOfStudy.trim()) er.fieldOfStudy = 'Required'
-    setErrors(er)
-    if (Object.keys(er).length) return
+  const createMutation = useMutation({
+    mutationFn: (data) => api.post('/teachers', data),
+    onSuccess: (res) => {
+      const teacher = res.data.data.teacher;
+      toast.success(`Teacher created! ID: ${teacher.teacherId}`);
+      queryClient.invalidateQueries({ queryKey: ['teachers'] });
+      queryClient.invalidateQueries({ queryKey: ['teachers-stats'] });
+      navigate(`/teachers/${teacher._id}`);
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Failed to create teacher.');
+      if (err.response?.data?.errors) setErrors(err.response.data.errors);
+    },
+  });
 
-    create.mutate({
-      firstName: f.firstName.trim(),
-      fatherName: f.fatherName.trim(),
-      grandFatherName: f.grandFatherName.trim() || undefined,
-      gender: f.gender,
-      dateOfBirth: f.dateOfBirth,
-      phone: f.phone,
-      email: f.email || undefined,
-      primarySubject: f.primarySubject,
-      gradesCanTeach: f.gradesCanTeach,
-      qualification: f.qualification,
-      fieldOfStudy: f.fieldOfStudy.trim(),
-      university: f.university || undefined,
-      yearsOfExperience: parseInt(f.yearsOfExperience) || 0,
-      joinDate: f.joinDate,
-      employmentType: f.employmentType,
-      salary: { basicSalary: parseFloat(f.basicSalary) || 0 }
-    })
-  }
+  const updateField = (field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
+  };
+
+  const toggleArrayField = (field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      [field]: prev[field].includes(value)
+        ? prev[field].filter((v) => v !== value)
+        : [...prev[field], value],
+    }));
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!form.firstName.trim()) newErrors.firstName = 'First name is required.';
+    if (!form.fatherName.trim()) newErrors.fatherName = "Father's name is required.";
+    if (!form.gender) newErrors.gender = 'Gender is required.';
+    if (!form.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required.';
+    if (!form.phone.trim()) newErrors.phone = 'Phone is required.';
+    if (!/^(\+251|251|0)?[79]\d{8}$/.test(form.phone))
+      newErrors.phone = 'Enter a valid Ethiopian phone number.';
+    if (!form.primarySubject) newErrors.primarySubject = 'Primary subject is required.';
+    if (form.gradesCanTeach.length === 0) newErrors.gradesCanTeach = 'Select at least one grade.';
+    if (!form.qualification) newErrors.qualification = 'Qualification is required.';
+    if (!form.fieldOfStudy.trim()) newErrors.fieldOfStudy = 'Field of study is required.';
+    if (!form.joinDate) newErrors.joinDate = 'Join date is required.';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    const payload = {
+      firstName: form.firstName.trim(),
+      fatherName: form.fatherName.trim(),
+      grandFatherName: form.grandFatherName.trim() || undefined,
+      gender: form.gender,
+      dateOfBirth: form.dateOfBirth,
+      nationality: form.nationality,
+      religion: form.religion || undefined,
+      bloodGroup: form.bloodGroup || undefined,
+      phone: form.phone,
+      alternatePhone: form.alternatePhone || undefined,
+      email: form.email || undefined,
+      address: {
+        region: form.addressRegion || undefined,
+        woreda: form.addressWoreda || undefined,
+        kebele: form.addressKebele || undefined,
+      },
+      primarySubject: form.primarySubject,
+      secondarySubjects: form.secondarySubjects,
+      gradesCanTeach: form.gradesCanTeach,
+      qualification: form.qualification,
+      fieldOfStudy: form.fieldOfStudy,
+      university: form.university || undefined,
+      yearOfGraduation: form.yearOfGraduation ? parseInt(form.yearOfGraduation) : undefined,
+      yearsOfExperience: parseInt(form.yearsOfExperience) || 0,
+      teachingLicenseNumber: form.teachingLicenseNumber || undefined,
+      joinDate: form.joinDate,
+      employmentType: form.employmentType,
+      isHomeRoomTeacher: form.isHomeRoomTeacher,
+      homeRoomSection:
+        form.isHomeRoomTeacher && form.homeRoomSection ? form.homeRoomSection : undefined,
+      salary: {
+        basicSalary: form.basicSalary ? parseFloat(form.basicSalary) : 0,
+        bankName: form.bankName || undefined,
+        bankAccountNumber: form.bankAccountNumber || undefined,
+        bankBranch: form.bankBranch || undefined,
+      },
+      tinNumber: form.tinNumber || undefined,
+      pensionNumber: form.pensionNumber || undefined,
+      nationalIdNumber: form.nationalIdNumber || undefined,
+      notes: form.notes || undefined,
+    };
+
+    createMutation.mutate(payload);
+  };
+
+  const inputClass = (field) => (errors[field] ? 'form-input-error' : 'form-input');
 
   return (
-    <form onSubmit={submit} className='max-w-3xl mx-auto space-y-5'>
-      <div className='text-sm text-slate-500'>
-        <Link to='/teachers'>Teachers</Link> / <b className='text-slate-900'>Add teacher</b>
+    <div className="max-w-3xl mx-auto">
+      <div className="flex items-center gap-2 text-sm text-slate-500 mb-5">
+        <Link to="/teachers" className="hover:text-slate-700">
+          Teachers
+        </Link>
+        <span>/</span>
+        <span className="text-slate-900 font-medium">Add New Teacher</span>
       </div>
 
-      <div className='card'>
-        <div className='card-header'>
-          <h2 className='font-bold'>Personal information</h2>
+      <form onSubmit={handleSubmit}>
+        {/* Personal Info */}
+        <div className="card mb-5">
+          <div className="card-header">
+            <h2 className="text-base font-bold">Personal Information</h2>
+          </div>
+          <div className="card-body grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField label="First Name" required error={errors.firstName}>
+              <input
+                type="text"
+                value={form.firstName}
+                onChange={(e) => updateField('firstName', e.target.value)}
+                placeholder="First name"
+                className={inputClass('firstName')}
+                autoFocus
+              />
+            </FormField>
+            <FormField label="Father's Name" required error={errors.fatherName}>
+              <input
+                type="text"
+                value={form.fatherName}
+                onChange={(e) => updateField('fatherName', e.target.value)}
+                placeholder="Father's name"
+                className={inputClass('fatherName')}
+              />
+            </FormField>
+            <FormField label="Grandfather's Name">
+              <input
+                type="text"
+                value={form.grandFatherName}
+                onChange={(e) => updateField('grandFatherName', e.target.value)}
+                placeholder="Optional"
+                className="form-input"
+              />
+            </FormField>
+            <FormField label="Gender" required error={errors.gender}>
+              <select
+                value={form.gender}
+                onChange={(e) => updateField('gender', e.target.value)}
+                className={inputClass('gender')}
+              >
+                <option value="">Select</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </FormField>
+            <FormField label="Date of Birth" required error={errors.dateOfBirth}>
+              <input
+                type="date"
+                value={form.dateOfBirth}
+                onChange={(e) => updateField('dateOfBirth', e.target.value)}
+                max={new Date().toISOString().split('T')[0]}
+                className={inputClass('dateOfBirth')}
+              />
+            </FormField>
+            <FormField label="Nationality">
+              <input
+                type="text"
+                value={form.nationality}
+                onChange={(e) => updateField('nationality', e.target.value)}
+                className="form-input"
+              />
+            </FormField>
+            <FormField label="Phone" required error={errors.phone} hint="+251...">
+              <input
+                type="tel"
+                value={form.phone}
+                onChange={(e) => updateField('phone', e.target.value)}
+                placeholder="+251911234567"
+                className={inputClass('phone')}
+              />
+            </FormField>
+            <FormField label="Alternate Phone" hint="+251...">
+              <input
+                type="tel"
+                value={form.alternatePhone}
+                onChange={(e) => updateField('alternatePhone', e.target.value)}
+                placeholder="Optional"
+                className="form-input"
+              />
+            </FormField>
+            <FormField label="Email" hint="Used for login access">
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) => updateField('email', e.target.value)}
+                placeholder="teacher@katschool.edu.et"
+                className="form-input"
+              />
+            </FormField>
+          </div>
         </div>
-        <div className='card-body grid grid-cols-1 md:grid-cols-2 gap-x-4'>
-          <Field label='First name' required error={errors.firstName}>
-            <input
-              className={cls('firstName')}
-              value={f.firstName}
-              onChange={e => set('firstName', e.target.value)}
-              autoFocus
-            />
-          </Field>
-          <Field label="Father's name" required error={errors.fatherName}>
-            <input
-              className={cls('fatherName')}
-              value={f.fatherName}
-              onChange={e => set('fatherName', e.target.value)}
-            />
-          </Field>
-          <Field label="Grandfather's name">
-            <input
-              className='form-input'
-              value={f.grandFatherName}
-              onChange={e => set('grandFatherName', e.target.value)}
-            />
-          </Field>
-          <Field label='Gender' required error={errors.gender}>
-            <select
-              className={cls('gender')}
-              value={f.gender}
-              onChange={e => set('gender', e.target.value)}
-            >
-              <option value=''>Select</option>
-              <option>Male</option>
-              <option>Female</option>
-            </select>
-          </Field>
-          <Field label='Date of birth' required error={errors.dateOfBirth}>
-            <input
-              type='date'
-              className={cls('dateOfBirth')}
-              value={f.dateOfBirth}
-              max={new Date().toISOString().split('T')[0]}
-              onChange={e => set('dateOfBirth', e.target.value)}
-            />
-          </Field>
-          <Field label='Phone' required error={errors.phone}>
-            <input
-              className={cls('phone')}
-              value={f.phone}
-              placeholder='+251911234567'
-              onChange={e => set('phone', e.target.value)}
-            />
-          </Field>
-          <Field label='Email'>
-            <input
-              type='email'
-              className='form-input'
-              value={f.email}
-              onChange={e => set('email', e.target.value)}
-            />
-          </Field>
-        </div>
-      </div>
 
-      <div className='card'>
-        <div className='card-header'>
-          <h2 className='font-bold'>Professional information</h2>
-        </div>
-        <div className='card-body grid grid-cols-1 md:grid-cols-2 gap-x-4'>
-          <Field label='Primary subject' required error={errors.primarySubject}>
-            <select
-              className={cls('primarySubject')}
-              value={f.primarySubject}
-              onChange={e => set('primarySubject', e.target.value)}
-            >
-              <option value=''>Select</option>
-              {SUBJECTS.map(s => (
-                <option key={s}>{s}</option>
-              ))}
-            </select>
-          </Field>
-          <Field label='Qualification' required error={errors.qualification}>
-            <select
-              className={cls('qualification')}
-              value={f.qualification}
-              onChange={e => set('qualification', e.target.value)}
-            >
-              <option value=''>Select</option>
-              {QUALIFICATIONS.map(q => (
-                <option key={q}>{q}</option>
-              ))}
-            </select>
-          </Field>
-          <Field label='Field of study' required error={errors.fieldOfStudy}>
-            <input
-              className={cls('fieldOfStudy')}
-              value={f.fieldOfStudy}
-              onChange={e => set('fieldOfStudy', e.target.value)}
-            />
-          </Field>
-          <Field label='University'>
-            <input
-              className='form-input'
-              value={f.university}
-              onChange={e => set('university', e.target.value)}
-            />
-          </Field>
-          <Field label='Years of experience'>
-            <input
-              type='number'
-              min='0'
-              className='form-input'
-              value={f.yearsOfExperience}
-              onChange={e => set('yearsOfExperience', e.target.value)}
-            />
-          </Field>
-          <Field label='Employment type'>
-            <select
-              className='form-select'
-              value={f.employmentType}
-              onChange={e => set('employmentType', e.target.value)}
-            >
-              {['Full-Time', 'Part-Time', 'Contract', 'Volunteer'].map(t => (
-                <option key={t}>{t}</option>
-              ))}
-            </select>
-          </Field>
-          <Field label='Join date'>
-            <input
-              type='date'
-              className='form-input'
-              value={f.joinDate}
-              onChange={e => set('joinDate', e.target.value)}
-            />
-          </Field>
-          <Field label='Basic salary (ETB)'>
-            <input
-              type='number'
-              min='0'
-              className='form-input'
-              value={f.basicSalary}
-              onChange={e => set('basicSalary', e.target.value)}
-            />
-          </Field>
-          <div className='md:col-span-2'>
-            <Field label='Grades can teach' required error={errors.gradesCanTeach}>
-              <div className='flex flex-wrap gap-2'>
-                {GRADES.map(g => (
+        {/* Professional Info */}
+        <div className="card mb-5">
+          <div className="card-header">
+            <h2 className="text-base font-bold">Professional Information</h2>
+          </div>
+          <div className="card-body space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField label="Primary Subject" required error={errors.primarySubject}>
+                <select
+                  value={form.primarySubject}
+                  onChange={(e) => updateField('primarySubject', e.target.value)}
+                  className={inputClass('primarySubject')}
+                >
+                  <option value="">Select primary subject</option>
+                  {SUBJECTS.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
+              <FormField label="Qualification" required error={errors.qualification}>
+                <select
+                  value={form.qualification}
+                  onChange={(e) => updateField('qualification', e.target.value)}
+                  className={inputClass('qualification')}
+                >
+                  <option value="">Select qualification</option>
+                  {QUALIFICATIONS.map((q) => (
+                    <option key={q} value={q}>
+                      {q}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
+              <FormField label="Field of Study" required error={errors.fieldOfStudy}>
+                <input
+                  type="text"
+                  value={form.fieldOfStudy}
+                  onChange={(e) => updateField('fieldOfStudy', e.target.value)}
+                  placeholder="e.g. Mathematics Education"
+                  className={inputClass('fieldOfStudy')}
+                />
+              </FormField>
+              <FormField label="University / Institution">
+                <input
+                  type="text"
+                  value={form.university}
+                  onChange={(e) => updateField('university', e.target.value)}
+                  placeholder="Institution name"
+                  className="form-input"
+                />
+              </FormField>
+              <FormField label="Year of Graduation">
+                <input
+                  type="number"
+                  value={form.yearOfGraduation}
+                  onChange={(e) => updateField('yearOfGraduation', e.target.value)}
+                  min="1970"
+                  max={new Date().getFullYear()}
+                  placeholder="e.g. 2015"
+                  className="form-input"
+                />
+              </FormField>
+              <FormField label="Years of Experience">
+                <input
+                  type="number"
+                  value={form.yearsOfExperience}
+                  onChange={(e) => updateField('yearsOfExperience', e.target.value)}
+                  min="0"
+                  max="50"
+                  className="form-input"
+                />
+              </FormField>
+              <FormField label="Teaching License Number">
+                <input
+                  type="text"
+                  value={form.teachingLicenseNumber}
+                  onChange={(e) => updateField('teachingLicenseNumber', e.target.value)}
+                  placeholder="License number (optional)"
+                  className="form-input"
+                />
+              </FormField>
+            </div>
+
+            {/* Grades Can Teach */}
+            <FormField label="Grades Can Teach" required error={errors.gradesCanTeach}>
+              <div className="flex flex-wrap gap-2 mt-1">
+                {GRADES.map((grade) => (
                   <button
-                    key={g}
-                    type='button'
-                    onClick={() => toggleGrade(g)}
-                    className={`px-3 py-1.5 rounded-lg text-sm border ${
-                      f.gradesCanTeach.includes(g)
+                    key={grade}
+                    type="button"
+                    onClick={() => toggleArrayField('gradesCanTeach', grade)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                      form.gradesCanTeach.includes(grade)
                         ? 'bg-indigo-600 text-white border-indigo-600'
-                        : 'bg-white text-slate-600 border-slate-300'
+                        : 'bg-white text-slate-600 border-slate-300 hover:border-indigo-400'
                     }`}
                   >
-                    {g}
+                    {grade}
                   </button>
                 ))}
               </div>
-            </Field>
+            </FormField>
+
+            {/* Secondary Subjects */}
+            <FormField label="Secondary Subjects (Optional)">
+              <div className="flex flex-wrap gap-2 mt-1">
+                {SUBJECTS.filter((s) => s !== form.primarySubject).map((subject) => (
+                  <button
+                    key={subject}
+                    type="button"
+                    onClick={() => toggleArrayField('secondarySubjects', subject)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${
+                      form.secondarySubjects.includes(subject)
+                        ? 'bg-purple-600 text-white border-purple-600'
+                        : 'bg-white text-slate-600 border-slate-300 hover:border-purple-400'
+                    }`}
+                  >
+                    {subject}
+                  </button>
+                ))}
+              </div>
+            </FormField>
           </div>
         </div>
-      </div>
 
-      <div className='flex justify-between'>
-        <Link to='/teachers' className='btn-outline'>
-          Cancel
-        </Link>
-        <button type='submit' disabled={create.isPending} className='btn-primary'>
-          {create.isPending ? 'Saving...' : 'Create teacher'}
-        </button>
-      </div>
-    </form>
-  )
-}
+        {/* Employment */}
+        <div className="card mb-5">
+          <div className="card-header">
+            <h2 className="text-base font-bold">Employment Details</h2>
+          </div>
+          <div className="card-body grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField label="Join Date" required error={errors.joinDate}>
+              <input
+                type="date"
+                value={form.joinDate}
+                onChange={(e) => updateField('joinDate', e.target.value)}
+                max={new Date().toISOString().split('T')[0]}
+                className={inputClass('joinDate')}
+              />
+            </FormField>
+            <FormField label="Employment Type">
+              <select
+                value={form.employmentType}
+                onChange={(e) => updateField('employmentType', e.target.value)}
+                className="form-select"
+              >
+                {EMPLOYMENT_TYPES.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </FormField>
 
-export default AddTeacherPage
+            <div className="col-span-2">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.isHomeRoomTeacher}
+                  onChange={(e) => updateField('isHomeRoomTeacher', e.target.checked)}
+                  className="form-checkbox"
+                />
+                <span className="text-sm font-medium text-slate-700">
+                  Assign as Homeroom Teacher
+                </span>
+              </label>
+            </div>
+
+            {form.isHomeRoomTeacher && (
+              <FormField label="Homeroom Section" className="col-span-2">
+                <select
+                  value={form.homeRoomSection}
+                  onChange={(e) => updateField('homeRoomSection', e.target.value)}
+                  className="form-select"
+                >
+                  <option value="">Select section</option>
+                  {(sectionsData || []).map((s) => (
+                    <option key={s._id} value={s._id}>
+                      {s.grade} — Section {s.name}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
+            )}
+          </div>
+        </div>
+
+        {/* Salary */}
+        <div className="card mb-5">
+          <div className="card-header">
+            <h2 className="text-base font-bold">Salary & Banking</h2>
+          </div>
+          <div className="card-body grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField label="Basic Salary (ETB)">
+              <input
+                type="number"
+                value={form.basicSalary}
+                onChange={(e) => updateField('basicSalary', e.target.value)}
+                min="0"
+                step="0.01"
+                placeholder="Monthly basic salary"
+                className="form-input"
+              />
+            </FormField>
+            <FormField label="TIN Number">
+              <input
+                type="text"
+                value={form.tinNumber}
+                onChange={(e) => updateField('tinNumber', e.target.value)}
+                placeholder="Tax Identification Number"
+                className="form-input"
+              />
+            </FormField>
+            <FormField label="Pension Number">
+              <input
+                type="text"
+                value={form.pensionNumber}
+                onChange={(e) => updateField('pensionNumber', e.target.value)}
+                placeholder="Pension account number"
+                className="form-input"
+              />
+            </FormField>
+            <FormField label="Bank Name">
+              <input
+                type="text"
+                value={form.bankName}
+                onChange={(e) => updateField('bankName', e.target.value)}
+                placeholder="e.g. Commercial Bank of Ethiopia"
+                className="form-input"
+              />
+            </FormField>
+            <FormField label="Bank Account Number">
+              <input
+                type="text"
+                value={form.bankAccountNumber}
+                onChange={(e) => updateField('bankAccountNumber', e.target.value)}
+                placeholder="Account number"
+                className="form-input"
+              />
+            </FormField>
+            <FormField label="Bank Branch">
+              <input
+                type="text"
+                value={form.bankBranch}
+                onChange={(e) => updateField('bankBranch', e.target.value)}
+                placeholder="Branch name"
+                className="form-input"
+              />
+            </FormField>
+          </div>
+        </div>
+
+        {/* Notes */}
+        <div className="card mb-5">
+          <div className="card-body">
+            <FormField label="Notes">
+              <textarea
+                value={form.notes}
+                onChange={(e) => updateField('notes', e.target.value)}
+                placeholder="Additional notes..."
+                className="form-textarea"
+              />
+            </FormField>
+          </div>
+        </div>
+
+        {/* Submit */}
+        <div className="flex items-center justify-between">
+          <Link to="/teachers" className="btn-outline">
+            Cancel
+          </Link>
+          <button type="submit" disabled={createMutation.isPending} className="btn-primary">
+            {createMutation.isPending ? (
+              <>
+                <div className="spinner-sm" /> Creating Teacher...
+              </>
+            ) : (
+              '✓ Create Teacher'
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default AddTeacherPage;
