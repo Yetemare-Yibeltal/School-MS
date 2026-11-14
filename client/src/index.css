@@ -16,6 +16,25 @@
 }
 
 @layer components {
+  .spinner-md {
+  @apply w-6 h-6 border-2 border-current border-t-transparent rounded-full animate-spin;
+}
+.grade-a {
+  @apply bg-green-100 text-green-800;
+}
+.grade-b {
+  @apply bg-blue-100 text-blue-800;
+}
+.grade-c {
+  @apply bg-amber-100 text-amber-800;
+}
+.grade-d {
+  @apply bg-orange-100 text-orange-800;
+}
+.grade-f {
+  @apply bg-red-100 text-red-800;
+}
+
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
   }
