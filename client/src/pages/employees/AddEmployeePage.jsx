@@ -4,11 +4,12 @@
 // kat-school/client/src/pages/employees/AddEmployeePage.jsx
 // ============================================
 
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import api from '../../services/api';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { Link, useNavigate } from 'react-router-dom';
+
+import api from '../../services/api';
 
 const QUALIFICATIONS = [
   'No formal education',
@@ -123,41 +124,72 @@ const AddEmployeePage = () => {
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Failed to create employee.');
-      if (err.response?.data?.errors) setErrors(err.response.data.errors);
+      if (err.response?.data?.errors) {
+        setErrors(err.response.data.errors);
+      }
     },
   });
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: null }));
+    }
   };
 
   const validate = () => {
     const newErrors = {};
-    if (!form.firstName.trim()) newErrors.firstName = 'First name is required.';
-    if (!form.fatherName.trim()) newErrors.fatherName = "Father's name is required.";
-    if (!form.gender) newErrors.gender = 'Gender is required.';
-    if (!form.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required.';
-    if (!form.phone.trim()) newErrors.phone = 'Phone is required.';
-    if (!/^(\+251|251|0)?[79]\d{8}$/.test(form.phone))
+    if (!form.firstName.trim()) {
+      newErrors.firstName = 'First name is required.';
+    }
+    if (!form.fatherName.trim()) {
+      newErrors.fatherName = "Father's name is required.";
+    }
+    if (!form.gender) {
+      newErrors.gender = 'Gender is required.';
+    }
+    if (!form.dateOfBirth) {
+      newErrors.dateOfBirth = 'Date of birth is required.';
+    }
+    if (!form.phone.trim()) {
+      newErrors.phone = 'Phone is required.';
+    }
+    if (!/^(\+251|251|0)?[79]\d{8}$/.test(form.phone)) {
       newErrors.phone = 'Enter a valid Ethiopian phone number.';
-    if (!form.department) newErrors.department = 'Department is required.';
-    if (!form.designation) newErrors.designation = 'Designation is required.';
-    if (!form.qualification) newErrors.qualification = 'Qualification is required.';
-    if (!form.joinDate) newErrors.joinDate = 'Join date is required.';
-    if (!form.basicSalary) newErrors.basicSalary = 'Basic salary is required.';
-    if (!form.emergencyName.trim()) newErrors.emergencyName = 'Emergency contact name is required.';
-    if (!form.emergencyPhone.trim())
+    }
+    if (!form.department) {
+      newErrors.department = 'Department is required.';
+    }
+    if (!form.designation) {
+      newErrors.designation = 'Designation is required.';
+    }
+    if (!form.qualification) {
+      newErrors.qualification = 'Qualification is required.';
+    }
+    if (!form.joinDate) {
+      newErrors.joinDate = 'Join date is required.';
+    }
+    if (!form.basicSalary) {
+      newErrors.basicSalary = 'Basic salary is required.';
+    }
+    if (!form.emergencyName.trim()) {
+      newErrors.emergencyName = 'Emergency contact name is required.';
+    }
+    if (!form.emergencyPhone.trim()) {
       newErrors.emergencyPhone = 'Emergency contact phone is required.';
-    if (!/^(\+251|251|0)?[79]\d{8}$/.test(form.emergencyPhone))
+    }
+    if (!/^(\+251|251|0)?[79]\d{8}$/.test(form.emergencyPhone)) {
       newErrors.emergencyPhone = 'Enter a valid phone.';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      return;
+    }
 
     const payload = {
       firstName: form.firstName.trim(),

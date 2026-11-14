@@ -4,9 +4,10 @@
 // kat-school/client/src/pages/hrm/HRMDashboardPage.jsx
 // ============================================
 
+import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+
 import api from '../../services/api';
 
 const HRMDashboardPage = () => {

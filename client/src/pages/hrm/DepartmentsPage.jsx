@@ -4,13 +4,16 @@
 // kat-school/client/src/pages/hrm/DepartmentsPage.jsx
 // ============================================
 
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../../services/api';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 
+import api from '../../services/api';
+
 const Modal = ({ isOpen, title, children, onClose }) => {
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
@@ -125,44 +128,61 @@ const DepartmentsPage = () => {
 
   const updateDeptField = (f, v) => {
     setDeptForm((p) => ({ ...p, [f]: v }));
-    if (errors[f]) setErrors((p) => ({ ...p, [f]: null }));
+    if (errors[f]) {
+      setErrors((p) => ({ ...p, [f]: null }));
+    }
   };
   const updateDesigField = (f, v) => {
     setDesigForm((p) => ({ ...p, [f]: v }));
-    if (errors[f]) setErrors((p) => ({ ...p, [f]: null }));
+    if (errors[f]) {
+      setErrors((p) => ({ ...p, [f]: null }));
+    }
   };
 
   const validateDept = () => {
     const newErrors = {};
-    if (!deptForm.name.trim()) newErrors.name = 'Name is required.';
+    if (!deptForm.name.trim()) {
+      newErrors.name = 'Name is required.';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const validateDesig = () => {
     const newErrors = {};
-    if (!desigForm.name.trim()) newErrors.name = 'Name is required.';
-    if (!desigForm.department) newErrors.department = 'Department is required.';
+    if (!desigForm.name.trim()) {
+      newErrors.name = 'Name is required.';
+    }
+    if (!desigForm.department) {
+      newErrors.department = 'Department is required.';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleDeptSubmit = (e) => {
     e.preventDefault();
-    if (!validateDept()) return;
+    if (!validateDept()) {
+      return;
+    }
     const payload = {
       name: deptForm.name.trim(),
       code: deptForm.code.trim().toUpperCase() || undefined,
       description: deptForm.description || undefined,
       headOf: deptForm.headOf || undefined,
     };
-    if (modal.subType === 'create') createDeptMutation.mutate(payload);
-    else updateDeptMutation.mutate({ id: modal.data._id, data: payload });
+    if (modal.subType === 'create') {
+      createDeptMutation.mutate(payload);
+    } else {
+      updateDeptMutation.mutate({ id: modal.data._id, data: payload });
+    }
   };
 
   const handleDesigSubmit = (e) => {
     e.preventDefault();
-    if (!validateDesig()) return;
+    if (!validateDesig()) {
+      return;
+    }
     createDesigMutation.mutate({
       name: desigForm.name.trim(),
       code: desigForm.code.trim().toUpperCase() || undefined,

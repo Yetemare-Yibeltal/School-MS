@@ -4,11 +4,12 @@
 // kat-school/client/src/pages/students/StudentsPage.jsx
 // ============================================
 
-import React, { useState, useCallback } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../../services/api';
+import React, { useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
+import { Link, useSearchParams } from 'react-router-dom';
+
+import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 
 const GRADES = ['Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
@@ -57,7 +58,9 @@ const StatusBadge = ({ status }) => {
 
 // ─── Confirm Delete Modal ──────────────────────
 const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, loading }) => {
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onCancel} />
@@ -101,7 +104,9 @@ const StudentsPage = () => {
     } else {
       next.delete(key);
     }
-    if (key !== 'page') next.set('page', '1');
+    if (key !== 'page') {
+      next.set('page', '1');
+    }
     setSearchParams(next);
   };
 
@@ -164,7 +169,9 @@ const StudentsPage = () => {
   };
 
   const SortIcon = ({ field }) => {
-    if (sort !== field) return <span className="text-slate-300 ml-1">↕</span>;
+    if (sort !== field) {
+      return <span className="text-slate-300 ml-1">↕</span>;
+    }
     return <span className="text-indigo-600 ml-1">{order === 'asc' ? '↑' : '↓'}</span>;
   };
 

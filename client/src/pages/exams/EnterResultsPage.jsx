@@ -4,11 +4,12 @@
 // kat-school/client/src/pages/exams/EnterResultsPage.jsx
 // ============================================
 
-import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../../services/api';
+import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+
+import api from '../../services/api';
 
 const EnterResultsPage = () => {
   const { id } = useParams();
@@ -35,7 +36,9 @@ const EnterResultsPage = () => {
         grade: examData.exam.grade,
         limit: 100,
       };
-      if (examData.exam.section) filter.section = examData.exam.section;
+      if (examData.exam.section) {
+        filter.section = examData.exam.section;
+      }
       const params = new URLSearchParams(filter);
       const res = await api.get(`/students?${params}`);
       return res.data.data.students;
@@ -148,12 +151,22 @@ const EnterResultsPage = () => {
   const absentCount = Object.values(absentMap).filter(Boolean).length;
 
   const getGradeForMark = (mark, total) => {
-    if (!mark && mark !== 0) return null;
+    if (!mark && mark !== 0) {
+      return null;
+    }
     const pct = (parseFloat(mark) / total) * 100;
-    if (pct >= 85) return { letter: 'A', color: 'text-green-600' };
-    if (pct >= 75) return { letter: 'B', color: 'text-blue-600' };
-    if (pct >= 65) return { letter: 'C', color: 'text-amber-600' };
-    if (pct >= 50) return { letter: 'D', color: 'text-orange-600' };
+    if (pct >= 85) {
+      return { letter: 'A', color: 'text-green-600' };
+    }
+    if (pct >= 75) {
+      return { letter: 'B', color: 'text-blue-600' };
+    }
+    if (pct >= 65) {
+      return { letter: 'C', color: 'text-amber-600' };
+    }
+    if (pct >= 50) {
+      return { letter: 'D', color: 'text-orange-600' };
+    }
     return { letter: 'F', color: 'text-red-600' };
   };
 
@@ -373,8 +386,9 @@ const EnterResultsPage = () => {
             {saved && exam.status === 'completed' && (
               <button
                 onClick={() => {
-                  if (confirm('Publish results? Students will be notified.'))
+                  if (confirm('Publish results? Students will be notified.')) {
                     publishMutation.mutate();
+                  }
                 }}
                 disabled={publishMutation.isPending}
                 className="btn-success"

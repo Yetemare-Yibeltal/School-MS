@@ -4,8 +4,9 @@
 // kat-school/client/src/pages/academic/TimetablePage.jsx
 // ============================================
 
-import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import React, { useState } from 'react';
+
 import api from '../../services/api';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -65,7 +66,9 @@ const TimetablePage = () => {
   let colorIndex = 0;
 
   (slotsData?.slots || []).forEach((slot) => {
-    if (!matrix[slot.dayOfWeek]) matrix[slot.dayOfWeek] = {};
+    if (!matrix[slot.dayOfWeek]) {
+      matrix[slot.dayOfWeek] = {};
+    }
     matrix[slot.dayOfWeek][slot.periodNumber] = slot;
 
     if (slot.subjectName && !subjectColorMap[slot.subjectName]) {

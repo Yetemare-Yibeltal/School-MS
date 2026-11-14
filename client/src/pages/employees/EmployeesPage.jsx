@@ -4,11 +4,12 @@
 // kat-school/client/src/pages/employees/EmployeesPage.jsx
 // ============================================
 
-import React, { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../../services/api';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { Link, useSearchParams } from 'react-router-dom';
+
+import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 
 const EmployeesPage = () => {
@@ -25,7 +26,9 @@ const EmployeesPage = () => {
   const updateParam = (key, value) => {
     const next = new URLSearchParams(searchParams);
     value ? next.set(key, value) : next.delete(key);
-    if (key !== 'page') next.set('page', '1');
+    if (key !== 'page') {
+      next.set('page', '1');
+    }
     setSearchParams(next);
   };
 
@@ -283,8 +286,8 @@ const EmployeesPage = () => {
                           emp.status === 'active'
                             ? 'badge-success'
                             : emp.status === 'on_leave'
-                            ? 'badge-warning'
-                            : 'badge-gray'
+                              ? 'badge-warning'
+                              : 'badge-gray'
                         }`}
                       >
                         {emp.status?.replace('_', ' ')}

@@ -4,12 +4,13 @@
 // kat-school/client/src/pages/teachers/TeacherDetailPage.jsx
 // ============================================
 
-import React, { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useState } from 'react';
+import toast from 'react-hot-toast';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+
 import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
-import toast from 'react-hot-toast';
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: '👤' },
@@ -92,7 +93,9 @@ const TeacherDetailPage = () => {
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      return;
+    }
     setPhotoUploading(true);
     const formData = new FormData();
     formData.append('photo', file);
@@ -216,8 +219,8 @@ const TeacherDetailPage = () => {
                         teacher.status === 'active'
                           ? 'badge-success'
                           : teacher.status === 'on_leave'
-                          ? 'badge-warning'
-                          : 'badge-gray'
+                            ? 'badge-warning'
+                            : 'badge-gray'
                       }`}
                     >
                       {teacher.status?.replace('_', ' ')}
@@ -276,7 +279,9 @@ const TeacherDetailPage = () => {
         <div className="border-t border-slate-100 overflow-x-auto no-scrollbar">
           <nav className="flex px-4">
             {TABS.map((tab) => {
-              if ((tab.id === 'attendance' || tab.id === 'payroll') && !canManage) return null;
+              if ((tab.id === 'attendance' || tab.id === 'payroll') && !canManage) {
+                return null;
+              }
               return (
                 <button
                   key={tab.id}
@@ -508,10 +513,10 @@ const TeacherDetailPage = () => {
                               record.status === 'present'
                                 ? 'badge-success'
                                 : record.status === 'absent'
-                                ? 'badge-danger'
-                                : record.status === 'late'
-                                ? 'badge-warning'
-                                : 'badge-gray'
+                                  ? 'badge-danger'
+                                  : record.status === 'late'
+                                    ? 'badge-warning'
+                                    : 'badge-gray'
                             }`}
                           >
                             {record.status?.replace('_', ' ')}
@@ -612,10 +617,10 @@ const TeacherDetailPage = () => {
                               app.status === 'approved'
                                 ? 'badge-success'
                                 : app.status === 'rejected'
-                                ? 'badge-danger'
-                                : app.status === 'pending'
-                                ? 'badge-warning'
-                                : 'badge-gray'
+                                  ? 'badge-danger'
+                                  : app.status === 'pending'
+                                    ? 'badge-warning'
+                                    : 'badge-gray'
                             }`}
                           >
                             {app.status}
@@ -681,8 +686,8 @@ const TeacherDetailPage = () => {
                             p.isPaid
                               ? 'badge-success'
                               : p.status === 'approved'
-                              ? 'badge-info'
-                              : 'badge-gray'
+                                ? 'badge-info'
+                                : 'badge-gray'
                           }`}
                         >
                           {p.isPaid ? 'Paid' : p.status}

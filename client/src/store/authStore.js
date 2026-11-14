@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+
 import api from '../services/api';
 
 export const useAuthStore = create(
@@ -46,7 +47,9 @@ export const useAuthStore = create(
 
       hasRole: (roles) => {
         const u = get().user;
-        if (!u) return false;
+        if (!u) {
+          return false;
+        }
         return Array.isArray(roles) ? roles.includes(u.role) : u.role === roles;
       },
     }),

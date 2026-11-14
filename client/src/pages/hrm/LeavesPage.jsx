@@ -4,15 +4,18 @@
 // kat-school/client/src/pages/hrm/LeavesPage.jsx
 // ============================================
 
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
-import api from '../../services/api';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { useSearchParams } from 'react-router-dom';
+
+import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 
 const Modal = ({ isOpen, title, children, onClose }) => {
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
@@ -53,7 +56,9 @@ const LeavesPage = () => {
   const updateParam = (key, value) => {
     const next = new URLSearchParams(searchParams);
     value ? next.set(key, value) : next.delete(key);
-    if (key !== 'page') next.set('page', '1');
+    if (key !== 'page') {
+      next.set('page', '1');
+    }
     setSearchParams(next);
   };
 
@@ -134,24 +139,40 @@ const LeavesPage = () => {
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: null }));
+    }
   };
 
   const validate = () => {
     const newErrors = {};
-    if (!form.staffId) newErrors.staffId = 'Staff member is required.';
-    if (!form.leaveType) newErrors.leaveType = 'Leave type is required.';
-    if (!form.startDate) newErrors.startDate = 'Start date is required.';
-    if (!form.endDate) newErrors.endDate = 'End date is required.';
-    if (form.endDate < form.startDate) newErrors.endDate = 'End date must be after start date.';
-    if (!form.reason.trim()) newErrors.reason = 'Reason is required.';
+    if (!form.staffId) {
+      newErrors.staffId = 'Staff member is required.';
+    }
+    if (!form.leaveType) {
+      newErrors.leaveType = 'Leave type is required.';
+    }
+    if (!form.startDate) {
+      newErrors.startDate = 'Start date is required.';
+    }
+    if (!form.endDate) {
+      newErrors.endDate = 'End date is required.';
+    }
+    if (form.endDate < form.startDate) {
+      newErrors.endDate = 'End date must be after start date.';
+    }
+    if (!form.reason.trim()) {
+      newErrors.reason = 'Reason is required.';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleApply = (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      return;
+    }
     applyMutation.mutate({
       staffId: form.staffId,
       staffType: form.staffType,
@@ -312,10 +333,10 @@ const LeavesPage = () => {
                           leave.status === 'approved'
                             ? 'badge-success'
                             : leave.status === 'rejected'
-                            ? 'badge-danger'
-                            : leave.status === 'pending'
-                            ? 'badge-warning'
-                            : 'badge-gray'
+                              ? 'badge-danger'
+                              : leave.status === 'pending'
+                                ? 'badge-warning'
+                                : 'badge-gray'
                         }`}
                       >
                         {leave.status}

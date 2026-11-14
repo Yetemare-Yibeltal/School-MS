@@ -4,17 +4,20 @@
 // kat-school/client/src/pages/finance/ExpensesPage.jsx
 // ============================================
 
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
-import api from '../../services/api';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { useSearchParams } from 'react-router-dom';
+
+import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 
 const EXPENSE_STATUSES = ['pending', 'approved', 'paid', 'rejected', 'cancelled'];
 
 const Modal = ({ isOpen, title, children, onClose }) => {
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
@@ -59,7 +62,9 @@ const ExpensesPage = () => {
   const updateParam = (key, value) => {
     const next = new URLSearchParams(searchParams);
     value ? next.set(key, value) : next.delete(key);
-    if (key !== 'page') next.set('page', '1');
+    if (key !== 'page') {
+      next.set('page', '1');
+    }
     setSearchParams(next);
   };
 
@@ -138,23 +143,34 @@ const ExpensesPage = () => {
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: null }));
+    }
   };
 
   const validate = () => {
     const newErrors = {};
-    if (!form.title.trim()) newErrors.title = 'Title is required.';
-    if (!form.category) newErrors.category = 'Category is required.';
-    if (!form.amount || parseFloat(form.amount) <= 0)
+    if (!form.title.trim()) {
+      newErrors.title = 'Title is required.';
+    }
+    if (!form.category) {
+      newErrors.category = 'Category is required.';
+    }
+    if (!form.amount || parseFloat(form.amount) <= 0) {
       newErrors.amount = 'Valid amount is required.';
-    if (!form.date) newErrors.date = 'Date is required.';
+    }
+    if (!form.date) {
+      newErrors.date = 'Date is required.';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      return;
+    }
     createMutation.mutate({
       title: form.title.trim(),
       category: form.category,
@@ -345,12 +361,12 @@ const ExpensesPage = () => {
                           expense.status === 'paid'
                             ? 'badge-success'
                             : expense.status === 'approved'
-                            ? 'badge-info'
-                            : expense.status === 'pending'
-                            ? 'badge-warning'
-                            : expense.status === 'rejected'
-                            ? 'badge-danger'
-                            : 'badge-gray'
+                              ? 'badge-info'
+                              : expense.status === 'pending'
+                                ? 'badge-warning'
+                                : expense.status === 'rejected'
+                                  ? 'badge-danger'
+                                  : 'badge-gray'
                         }`}
                       >
                         {expense.status}

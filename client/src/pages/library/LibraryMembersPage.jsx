@@ -4,14 +4,17 @@
 // kat-school/client/src/pages/library/LibraryMembersPage.jsx
 // ============================================
 
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
-import api from '../../services/api';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { useSearchParams } from 'react-router-dom';
+
+import api from '../../services/api';
 
 const Modal = ({ isOpen, title, children, onClose }) => {
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
@@ -49,7 +52,9 @@ const LibraryMembersPage = () => {
   const updateParam = (key, value) => {
     const next = new URLSearchParams(searchParams);
     value ? next.set(key, value) : next.delete(key);
-    if (key !== 'page') next.set('page', '1');
+    if (key !== 'page') {
+      next.set('page', '1');
+    }
     setSearchParams(next);
   };
 
@@ -132,19 +137,25 @@ const LibraryMembersPage = () => {
 
   const updateField = (f, v) => {
     setForm((p) => ({ ...p, [f]: v }));
-    if (errors[f]) setErrors((p) => ({ ...p, [f]: null }));
+    if (errors[f]) {
+      setErrors((p) => ({ ...p, [f]: null }));
+    }
   };
 
   const validate = () => {
     const newErrors = {};
-    if (!form.referenceId) newErrors.referenceId = 'Please select a person.';
+    if (!form.referenceId) {
+      newErrors.referenceId = 'Please select a person.';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      return;
+    }
 
     const defaultExpiry = new Date();
     defaultExpiry.setFullYear(defaultExpiry.getFullYear() + 1);
@@ -164,8 +175,8 @@ const LibraryMembersPage = () => {
     form.memberType === 'student'
       ? studentsData || []
       : form.memberType === 'teacher'
-      ? teachersData || []
-      : employeesData || [];
+        ? teachersData || []
+        : employeesData || [];
 
   return (
     <div className="space-y-5">
@@ -317,8 +328,8 @@ const LibraryMembersPage = () => {
                             member.memberType === 'student'
                               ? 'badge-primary'
                               : member.memberType === 'teacher'
-                              ? 'badge-info'
-                              : 'badge-gray'
+                                ? 'badge-info'
+                                : 'badge-gray'
                           }`}
                         >
                           {member.memberType}
@@ -369,8 +380,9 @@ const LibraryMembersPage = () => {
                         {member.status === 'active' && (
                           <button
                             onClick={() => {
-                              if (confirm('Deactivate this library member?'))
+                              if (confirm('Deactivate this library member?')) {
                                 deactivateMutation.mutate(member._id);
+                              }
                             }}
                             className="btn-icon text-slate-400 hover:text-red-500 hover:bg-red-50"
                             title="Deactivate"
@@ -473,10 +485,10 @@ const LibraryMembersPage = () => {
                   {p.studentId
                     ? ` (${p.studentId})`
                     : p.teacherId
-                    ? ` (${p.teacherId})`
-                    : p.employeeId
-                    ? ` (${p.employeeId})`
-                    : ''}
+                      ? ` (${p.teacherId})`
+                      : p.employeeId
+                        ? ` (${p.employeeId})`
+                        : ''}
                 </option>
               ))}
             </select>

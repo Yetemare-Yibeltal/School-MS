@@ -4,11 +4,12 @@
 // kat-school/client/src/pages/finance/IncomePage.jsx
 // ============================================
 
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
-import api from '../../services/api';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { useSearchParams } from 'react-router-dom';
+
+import api from '../../services/api';
 
 const INCOME_SOURCES = [
   'Fee Collection',
@@ -21,7 +22,9 @@ const INCOME_SOURCES = [
 ];
 
 const Modal = ({ isOpen, title, children, onClose }) => {
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
@@ -64,7 +67,9 @@ const IncomePage = () => {
   const updateParam = (key, value) => {
     const next = new URLSearchParams(searchParams);
     value ? next.set(key, value) : next.delete(key);
-    if (key !== 'page') next.set('page', '1');
+    if (key !== 'page') {
+      next.set('page', '1');
+    }
     setSearchParams(next);
   };
 
@@ -142,23 +147,34 @@ const IncomePage = () => {
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: null }));
+    }
   };
 
   const validate = () => {
     const newErrors = {};
-    if (!form.title.trim()) newErrors.title = 'Title is required.';
-    if (!form.amount || parseFloat(form.amount) <= 0)
+    if (!form.title.trim()) {
+      newErrors.title = 'Title is required.';
+    }
+    if (!form.amount || parseFloat(form.amount) <= 0) {
       newErrors.amount = 'Valid amount is required.';
-    if (!form.source) newErrors.source = 'Source is required.';
-    if (!form.date) newErrors.date = 'Date is required.';
+    }
+    if (!form.source) {
+      newErrors.source = 'Source is required.';
+    }
+    if (!form.date) {
+      newErrors.date = 'Date is required.';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      return;
+    }
     createMutation.mutate({
       title: form.title.trim(),
       amount: parseFloat(form.amount),
@@ -344,8 +360,9 @@ const IncomePage = () => {
                     <td className="text-right">
                       <button
                         onClick={() => {
-                          if (confirm('Delete this income record?'))
+                          if (confirm('Delete this income record?')) {
                             deleteMutation.mutate(record._id);
+                          }
                         }}
                         className="btn-icon text-slate-400 hover:text-red-500 hover:bg-red-50"
                         title="Delete"

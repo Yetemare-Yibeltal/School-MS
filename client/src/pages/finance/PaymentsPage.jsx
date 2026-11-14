@@ -4,11 +4,12 @@
 // kat-school/client/src/pages/finance/PaymentsPage.jsx
 // ============================================
 
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
-import api from '../../services/api';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { useSearchParams } from 'react-router-dom';
+
+import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 
 const PAYMENT_METHODS = ['Cash', 'Bank Transfer', 'Telebirr', 'CBE Birr', 'Cheque', 'Other'];
@@ -32,7 +33,9 @@ const PaymentsPage = () => {
   const updateParam = (key, value) => {
     const next = new URLSearchParams(searchParams);
     value ? next.set(key, value) : next.delete(key);
-    if (key !== 'page') next.set('page', '1');
+    if (key !== 'page') {
+      next.set('page', '1');
+    }
     setSearchParams(next);
   };
 
@@ -279,10 +282,10 @@ const PaymentsPage = () => {
                           payment.method === 'Cash'
                             ? 'bg-green-100 text-green-700'
                             : payment.method === 'Bank Transfer'
-                            ? 'bg-blue-100 text-blue-700'
-                            : payment.method === 'Telebirr'
-                            ? 'bg-purple-100 text-purple-700'
-                            : 'badge-gray'
+                              ? 'bg-blue-100 text-blue-700'
+                              : payment.method === 'Telebirr'
+                                ? 'bg-purple-100 text-purple-700'
+                                : 'badge-gray'
                         }`}
                       >
                         {payment.method}

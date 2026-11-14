@@ -4,11 +4,12 @@
 // kat-school/client/src/pages/library/BookIssuePage.jsx
 // ============================================
 
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
-import api from '../../services/api';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { useSearchParams } from 'react-router-dom';
+
+import api from '../../services/api';
 
 const IssueModal = ({ onClose, onSuccess }) => {
   const [form, setForm] = useState({ memberId: '', bookId: '', dueDate: '', notes: '' });
@@ -48,18 +49,27 @@ const IssueModal = ({ onClose, onSuccess }) => {
 
   const validate = () => {
     const newErrors = {};
-    if (!form.memberId) newErrors.memberId = 'Member is required.';
-    if (!form.bookId) newErrors.bookId = 'Book is required.';
-    if (!form.dueDate) newErrors.dueDate = 'Due date is required.';
-    if (form.dueDate && form.dueDate <= today)
+    if (!form.memberId) {
+      newErrors.memberId = 'Member is required.';
+    }
+    if (!form.bookId) {
+      newErrors.bookId = 'Book is required.';
+    }
+    if (!form.dueDate) {
+      newErrors.dueDate = 'Due date is required.';
+    }
+    if (form.dueDate && form.dueDate <= today) {
       newErrors.dueDate = 'Due date must be in the future.';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      return;
+    }
     issueMutation.mutate({
       member: form.memberId,
       book: form.bookId,
@@ -213,7 +223,9 @@ const BookIssuePage = () => {
   const updateParam = (key, value) => {
     const next = new URLSearchParams(searchParams);
     value ? next.set(key, value) : next.delete(key);
-    if (key !== 'page') next.set('page', '1');
+    if (key !== 'page') {
+      next.set('page', '1');
+    }
     setSearchParams(next);
   };
 
@@ -438,8 +450,8 @@ const BookIssuePage = () => {
                             issue.status === 'returned'
                               ? 'badge-success'
                               : isOverdue
-                              ? 'badge-danger'
-                              : 'badge-primary'
+                                ? 'badge-danger'
+                                : 'badge-primary'
                           }`}
                         >
                           {isOverdue ? 'Overdue' : issue.status}
@@ -451,8 +463,9 @@ const BookIssuePage = () => {
                             <>
                               <button
                                 onClick={() => {
-                                  if (confirm('Return this book?'))
+                                  if (confirm('Return this book?')) {
                                     returnMutation.mutate(issue._id);
+                                  }
                                 }}
                                 disabled={returnMutation.isPending}
                                 className="btn-sm bg-green-50 text-green-700 border border-green-200 rounded-lg px-2 py-1 text-xs hover:bg-green-100"

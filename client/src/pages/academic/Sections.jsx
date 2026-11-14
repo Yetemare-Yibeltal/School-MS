@@ -4,16 +4,19 @@
 // kat-school/client/src/pages/academic/SectionsPage.jsx
 // ============================================
 
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../../services/api';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+
+import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 
 const GRADES = ['Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 
 const Modal = ({ isOpen, title, children, onClose }) => {
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
@@ -144,22 +147,34 @@ const SectionsPage = () => {
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: null }));
+    }
   };
 
   const validate = () => {
     const newErrors = {};
-    if (!form.name.trim()) newErrors.name = 'Section name is required.';
-    if (!form.class) newErrors.class = 'Class is required.';
-    if (!form.grade) newErrors.grade = 'Grade is required.';
-    if (!form.academicYear) newErrors.academicYear = 'Academic year is required.';
+    if (!form.name.trim()) {
+      newErrors.name = 'Section name is required.';
+    }
+    if (!form.class) {
+      newErrors.class = 'Class is required.';
+    }
+    if (!form.grade) {
+      newErrors.grade = 'Grade is required.';
+    }
+    if (!form.academicYear) {
+      newErrors.academicYear = 'Academic year is required.';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      return;
+    }
 
     const payload = {
       name: form.name.trim().toUpperCase(),
@@ -280,7 +295,9 @@ const SectionsPage = () => {
         <div className="space-y-6">
           {GRADES.filter((g) => !filterGrade || g === filterGrade).map((grade) => {
             const gradeSections = grouped[grade] || [];
-            if (gradeSections.length === 0) return null;
+            if (gradeSections.length === 0) {
+              return null;
+            }
             return (
               <div key={grade}>
                 <h2 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">

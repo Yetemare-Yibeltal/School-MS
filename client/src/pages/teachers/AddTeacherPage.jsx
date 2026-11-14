@@ -4,11 +4,12 @@
 // kat-school/client/src/pages/teachers/AddTeacherPage.jsx
 // ============================================
 
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import api from '../../services/api';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { Link, useNavigate } from 'react-router-dom';
+
+import api from '../../services/api';
 
 const GRADES = ['Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 const SUBJECTS = [
@@ -104,13 +105,17 @@ const AddTeacherPage = () => {
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Failed to create teacher.');
-      if (err.response?.data?.errors) setErrors(err.response.data.errors);
+      if (err.response?.data?.errors) {
+        setErrors(err.response.data.errors);
+      }
     },
   });
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: null }));
+    }
   };
 
   const toggleArrayField = (field, value) => {
@@ -124,25 +129,48 @@ const AddTeacherPage = () => {
 
   const validate = () => {
     const newErrors = {};
-    if (!form.firstName.trim()) newErrors.firstName = 'First name is required.';
-    if (!form.fatherName.trim()) newErrors.fatherName = "Father's name is required.";
-    if (!form.gender) newErrors.gender = 'Gender is required.';
-    if (!form.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required.';
-    if (!form.phone.trim()) newErrors.phone = 'Phone is required.';
-    if (!/^(\+251|251|0)?[79]\d{8}$/.test(form.phone))
+    if (!form.firstName.trim()) {
+      newErrors.firstName = 'First name is required.';
+    }
+    if (!form.fatherName.trim()) {
+      newErrors.fatherName = "Father's name is required.";
+    }
+    if (!form.gender) {
+      newErrors.gender = 'Gender is required.';
+    }
+    if (!form.dateOfBirth) {
+      newErrors.dateOfBirth = 'Date of birth is required.';
+    }
+    if (!form.phone.trim()) {
+      newErrors.phone = 'Phone is required.';
+    }
+    if (!/^(\+251|251|0)?[79]\d{8}$/.test(form.phone)) {
       newErrors.phone = 'Enter a valid Ethiopian phone number.';
-    if (!form.primarySubject) newErrors.primarySubject = 'Primary subject is required.';
-    if (form.gradesCanTeach.length === 0) newErrors.gradesCanTeach = 'Select at least one grade.';
-    if (!form.qualification) newErrors.qualification = 'Qualification is required.';
-    if (!form.fieldOfStudy.trim()) newErrors.fieldOfStudy = 'Field of study is required.';
-    if (!form.joinDate) newErrors.joinDate = 'Join date is required.';
+    }
+    if (!form.primarySubject) {
+      newErrors.primarySubject = 'Primary subject is required.';
+    }
+    if (form.gradesCanTeach.length === 0) {
+      newErrors.gradesCanTeach = 'Select at least one grade.';
+    }
+    if (!form.qualification) {
+      newErrors.qualification = 'Qualification is required.';
+    }
+    if (!form.fieldOfStudy.trim()) {
+      newErrors.fieldOfStudy = 'Field of study is required.';
+    }
+    if (!form.joinDate) {
+      newErrors.joinDate = 'Join date is required.';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      return;
+    }
 
     const payload = {
       firstName: form.firstName.trim(),

@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useNavigate, useLocation } from 'react-router-dom';
+
 import { useAuthStore } from '../../store/authStore';
 
 const LoginPage = () => {
@@ -19,12 +20,18 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = {};
-    if (!form.email.trim()) errs.email = 'Email is required.';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+    if (!form.email.trim()) {
+      errs.email = 'Email is required.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       errs.email = 'Enter a valid email address.';
-    if (!form.password) errs.password = 'Password is required.';
+    }
+    if (!form.password) {
+      errs.password = 'Password is required.';
+    }
     setErrors(errs);
-    if (Object.keys(errs).length) return;
+    if (Object.keys(errs).length) {
+      return;
+    }
 
     const result = await login(form.email.trim(), form.password);
     if (result.success) {

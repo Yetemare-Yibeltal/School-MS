@@ -4,11 +4,12 @@
 // kat-school/client/src/pages/exams/ExamDetailPage.jsx
 // ============================================
 
-import React from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../../services/api';
+import React from 'react';
 import toast from 'react-hot-toast';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+
+import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 
 const InfoItem = ({ label, value }) => (
@@ -114,12 +115,12 @@ const ExamDetailPage = () => {
                     exam.status === 'scheduled'
                       ? 'bg-blue-100 text-blue-800'
                       : exam.status === 'ongoing'
-                      ? 'bg-green-100 text-green-800'
-                      : exam.status === 'completed'
-                      ? 'bg-slate-100 text-slate-700'
-                      : exam.status === 'cancelled'
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-amber-100 text-amber-800'
+                        ? 'bg-green-100 text-green-800'
+                        : exam.status === 'completed'
+                          ? 'bg-slate-100 text-slate-700'
+                          : exam.status === 'cancelled'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-amber-100 text-amber-800'
                   }`}
                 >
                   {exam.status}
@@ -250,12 +251,12 @@ const ExamDetailPage = () => {
                         letter === 'A'
                           ? 'bg-green-100 text-green-800'
                           : letter === 'B'
-                          ? 'bg-blue-100 text-blue-800'
-                          : letter === 'C'
-                          ? 'bg-amber-100 text-amber-800'
-                          : letter === 'D'
-                          ? 'bg-orange-100 text-orange-800'
-                          : 'bg-red-100 text-red-800'
+                            ? 'bg-blue-100 text-blue-800'
+                            : letter === 'C'
+                              ? 'bg-amber-100 text-amber-800'
+                              : letter === 'D'
+                                ? 'bg-orange-100 text-orange-800'
+                                : 'bg-red-100 text-red-800'
                       }`}
                     >
                       {letter}
@@ -289,18 +290,25 @@ const ExamDetailPage = () => {
             Results {results.length > 0 ? `(${results.length} students)` : ''}
           </h3>
           <div className="flex items-center gap-2">
-            {canManage && exam.status === 'completed' && results.some((r) => r.status === 'draft') && (
-              <button
-                onClick={() => {
-                  if (confirm('Publish all results? Students will be notified.'))
-                    publishMutation.mutate();
-                }}
-                disabled={publishMutation.isPending}
-                className="btn-primary btn-sm"
-              >
-                {publishMutation.isPending ? <div className="spinner-sm" /> : '📢 Publish Results'}
-              </button>
-            )}
+            {canManage &&
+              exam.status === 'completed' &&
+              results.some((r) => r.status === 'draft') && (
+                <button
+                  onClick={() => {
+                    if (confirm('Publish all results? Students will be notified.')) {
+                      publishMutation.mutate();
+                    }
+                  }}
+                  disabled={publishMutation.isPending}
+                  className="btn-primary btn-sm"
+                >
+                  {publishMutation.isPending ? (
+                    <div className="spinner-sm" />
+                  ) : (
+                    '📢 Publish Results'
+                  )}
+                </button>
+              )}
           </div>
         </div>
         <div className="table-container rounded-none border-0">
@@ -354,10 +362,10 @@ const ExamDetailPage = () => {
                             index === 0
                               ? 'text-amber-600'
                               : index === 1
-                              ? 'text-slate-600'
-                              : index === 2
-                              ? 'text-orange-700'
-                              : 'text-slate-500'
+                                ? 'text-slate-600'
+                                : index === 2
+                                  ? 'text-orange-700'
+                                  : 'text-slate-500'
                           }`}
                         >
                           {result.rank || index + 1}
@@ -400,12 +408,12 @@ const ExamDetailPage = () => {
                             result.gradeLetter === 'A'
                               ? 'bg-green-100 text-green-800'
                               : result.gradeLetter === 'B'
-                              ? 'bg-blue-100 text-blue-800'
-                              : result.gradeLetter === 'C'
-                              ? 'bg-amber-100 text-amber-800'
-                              : result.gradeLetter === 'D'
-                              ? 'bg-orange-100 text-orange-800'
-                              : 'bg-red-100 text-red-800'
+                                ? 'bg-blue-100 text-blue-800'
+                                : result.gradeLetter === 'C'
+                                  ? 'bg-amber-100 text-amber-800'
+                                  : result.gradeLetter === 'D'
+                                    ? 'bg-orange-100 text-orange-800'
+                                    : 'bg-red-100 text-red-800'
                           }`}
                         >
                           {result.gradeLetter}

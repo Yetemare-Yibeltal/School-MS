@@ -4,14 +4,17 @@
 // kat-school/client/src/pages/library/BooksPage.jsx
 // ============================================
 
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
-import api from '../../services/api';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { useSearchParams } from 'react-router-dom';
+
+import api from '../../services/api';
 
 const Modal = ({ isOpen, title, children, onClose }) => {
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
@@ -49,7 +52,9 @@ const BooksPage = () => {
   const updateParam = (key, value) => {
     const next = new URLSearchParams(searchParams);
     value ? next.set(key, value) : next.delete(key);
-    if (key !== 'page') next.set('page', '1');
+    if (key !== 'page') {
+      next.set('page', '1');
+    }
     setSearchParams(next);
   };
 
@@ -154,22 +159,31 @@ const BooksPage = () => {
 
   const updateField = (f, v) => {
     setForm((p) => ({ ...p, [f]: v }));
-    if (errors[f]) setErrors((p) => ({ ...p, [f]: null }));
+    if (errors[f]) {
+      setErrors((p) => ({ ...p, [f]: null }));
+    }
   };
 
   const validate = () => {
     const newErrors = {};
-    if (!form.title.trim()) newErrors.title = 'Title is required.';
-    if (!form.category) newErrors.category = 'Category is required.';
-    if (!form.totalCopies || parseInt(form.totalCopies) < 1)
+    if (!form.title.trim()) {
+      newErrors.title = 'Title is required.';
+    }
+    if (!form.category) {
+      newErrors.category = 'Category is required.';
+    }
+    if (!form.totalCopies || parseInt(form.totalCopies) < 1) {
       newErrors.totalCopies = 'At least 1 copy.';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      return;
+    }
     const payload = {
       title: form.title.trim(),
       author: form.author.trim() || undefined,
@@ -184,8 +198,11 @@ const BooksPage = () => {
       accessionNumber: form.accessionNumber.trim() || undefined,
       location: form.location.trim() || undefined,
     };
-    if (modal.type === 'create') createMutation.mutate(payload);
-    else updateMutation.mutate({ id: modal.data._id, data: payload });
+    if (modal.type === 'create') {
+      createMutation.mutate(payload);
+    } else {
+      updateMutation.mutate({ id: modal.data._id, data: payload });
+    }
   };
 
   const books = data?.data?.books || [];
@@ -318,7 +335,9 @@ const BooksPage = () => {
                     </button>
                     <button
                       onClick={() => {
-                        if (confirm(`Remove "${book.title}"?`)) deleteMutation.mutate(book._id);
+                        if (confirm(`Remove "${book.title}"?`)) {
+                          deleteMutation.mutate(book._id);
+                        }
                       }}
                       className="btn-icon text-slate-400 hover:text-red-500 hover:bg-red-50"
                     >

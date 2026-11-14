@@ -17,7 +17,9 @@ const readStored = () => {
 
 api.interceptors.request.use((config) => {
   const token = readStored()?.state?.accessToken;
-  if (token && !config.headers.Authorization) config.headers.Authorization = `Bearer ${token}`;
+  if (token && !config.headers.Authorization) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 
@@ -58,8 +60,12 @@ api.interceptors.response.use(
     if (status === 403 && error.response?.data?.code !== 'TEMPORARY_PASSWORD') {
       toast.error('You do not have permission to perform this action.', { id: 'forbidden' });
     }
-    if (status === 429) toast.error('Too many requests. Please slow down.', { id: 'rate' });
-    if (status >= 500) toast.error('Server error. Please try again.', { id: 'server' });
+    if (status === 429) {
+      toast.error('Too many requests. Please slow down.', { id: 'rate' });
+    }
+    if (status >= 500) {
+      toast.error('Server error. Please try again.', { id: 'server' });
+    }
     return Promise.reject(error);
   }
 );

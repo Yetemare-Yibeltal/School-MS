@@ -4,9 +4,10 @@
 // kat-school/client/src/pages/library/LibraryDashboardPage.jsx
 // ============================================
 
+import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+
 import api from '../../services/api';
 
 const LibraryDashboardPage = () => {
@@ -224,8 +225,8 @@ const LibraryDashboardPage = () => {
                         issue.status === 'issued'
                           ? 'badge-primary'
                           : issue.status === 'returned'
-                          ? 'badge-success'
-                          : 'badge-danger'
+                            ? 'badge-success'
+                            : 'badge-danger'
                       }`}
                     >
                       {issue.status}

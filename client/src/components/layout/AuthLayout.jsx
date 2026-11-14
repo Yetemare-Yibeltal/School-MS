@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom';
+
 const AuthLayout = () => (
   <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-indigo-900 to-purple-900 flex items-center justify-center p-6">
     <div className="w-full max-w-md">

@@ -4,8 +4,9 @@
 // kat-school/client/src/pages/attendance/AttendanceReportPage.jsx
 // ============================================
 
-import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import React, { useState } from 'react';
+
 import api from '../../services/api';
 
 const GRADES = ['Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
@@ -50,8 +51,12 @@ const AttendanceReportPage = () => {
   });
 
   const getAttendanceColor = (pct) => {
-    if (pct >= 85) return 'text-green-700 bg-green-100';
-    if (pct >= 75) return 'text-amber-700 bg-amber-100';
+    if (pct >= 85) {
+      return 'text-green-700 bg-green-100';
+    }
+    if (pct >= 75) {
+      return 'text-amber-700 bg-amber-100';
+    }
     return 'text-red-700 bg-red-100';
   };
 
@@ -255,8 +260,8 @@ const AttendanceReportPage = () => {
                                   pct >= 85
                                     ? 'bg-green-500'
                                     : pct >= 75
-                                    ? 'bg-amber-500'
-                                    : 'bg-red-500'
+                                      ? 'bg-amber-500'
+                                      : 'bg-red-500'
                                 }
                               />
                               <span

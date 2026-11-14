@@ -4,13 +4,16 @@
 // kat-school/client/src/pages/academic/AcademicYearsPage.jsx
 // ============================================
 
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../../services/api';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 
+import api from '../../services/api';
+
 const Modal = ({ isOpen, title, children, onClose }) => {
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
@@ -108,9 +111,15 @@ const AcademicYearsPage = () => {
 
   const validate = () => {
     const newErrors = {};
-    if (!form.name.trim()) newErrors.name = 'Name is required.';
-    if (!form.startDate) newErrors.startDate = 'Start date is required.';
-    if (!form.endDate) newErrors.endDate = 'End date is required.';
+    if (!form.name.trim()) {
+      newErrors.name = 'Name is required.';
+    }
+    if (!form.startDate) {
+      newErrors.startDate = 'Start date is required.';
+    }
+    if (!form.endDate) {
+      newErrors.endDate = 'End date is required.';
+    }
     if (form.startDate && form.endDate && form.endDate <= form.startDate) {
       newErrors.endDate = 'End date must be after start date.';
     }
@@ -120,7 +129,9 @@ const AcademicYearsPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      return;
+    }
 
     const payload = {
       name: form.name.trim(),
@@ -139,7 +150,9 @@ const AcademicYearsPage = () => {
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: null }));
+    }
   };
 
   const years = data || [];
@@ -196,8 +209,8 @@ const AcademicYearsPage = () => {
                       year.status === 'active'
                         ? 'badge-success'
                         : year.status === 'completed'
-                        ? 'badge-gray'
-                        : 'badge-warning'
+                          ? 'badge-gray'
+                          : 'badge-warning'
                     } capitalize`}
                   >
                     {year.status}

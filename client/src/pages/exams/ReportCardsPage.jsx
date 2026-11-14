@@ -4,10 +4,11 @@
 // kat-school/client/src/pages/exams/ReportCardsPage.jsx
 // ============================================
 
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../../services/api';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+
+import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 
 const GRADES = ['Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
@@ -109,8 +110,9 @@ const ReportCardsPage = () => {
       toast.error('Please select grade, academic year, and term.');
       return;
     }
-    if (!confirm(`Publish all report cards for ${selectedGrade}? Students will be notified.`))
+    if (!confirm(`Publish all report cards for ${selectedGrade}? Students will be notified.`)) {
       return;
+    }
 
     setPublishing(true);
     try {
@@ -346,10 +348,10 @@ const ReportCardsPage = () => {
                             index === 0
                               ? 'text-amber-500'
                               : index === 1
-                              ? 'text-slate-400'
-                              : index === 2
-                              ? 'text-orange-600'
-                              : 'text-slate-400'
+                                ? 'text-slate-400'
+                                : index === 2
+                                  ? 'text-orange-600'
+                                  : 'text-slate-400'
                           }`}
                         >
                           {card.rank || index + 1}
@@ -414,8 +416,8 @@ const ReportCardsPage = () => {
                             card.status === 'published'
                               ? 'badge-success'
                               : card.status === 'draft'
-                              ? 'badge-warning'
-                              : 'badge-gray'
+                                ? 'badge-warning'
+                                : 'badge-gray'
                           }`}
                         >
                           {card.status}
@@ -521,12 +523,12 @@ const ReportCardsPage = () => {
                               (subject.finalScore || 0) >= 85
                                 ? 'bg-green-500'
                                 : (subject.finalScore || 0) >= 75
-                                ? 'bg-blue-500'
-                                : (subject.finalScore || 0) >= 65
-                                ? 'bg-amber-500'
-                                : (subject.finalScore || 0) >= 50
-                                ? 'bg-orange-500'
-                                : 'bg-red-500'
+                                  ? 'bg-blue-500'
+                                  : (subject.finalScore || 0) >= 65
+                                    ? 'bg-amber-500'
+                                    : (subject.finalScore || 0) >= 50
+                                      ? 'bg-orange-500'
+                                      : 'bg-red-500'
                             }`}
                             style={{ width: `${Math.min(100, subject.finalScore || 0)}%` }}
                           />
@@ -539,12 +541,12 @@ const ReportCardsPage = () => {
                             subject.gradeLetter === 'A'
                               ? 'bg-green-100 text-green-800'
                               : subject.gradeLetter === 'B'
-                              ? 'bg-blue-100 text-blue-800'
-                              : subject.gradeLetter === 'C'
-                              ? 'bg-amber-100 text-amber-800'
-                              : subject.gradeLetter === 'D'
-                              ? 'bg-orange-100 text-orange-800'
-                              : 'bg-red-100 text-red-800'
+                                ? 'bg-blue-100 text-blue-800'
+                                : subject.gradeLetter === 'C'
+                                  ? 'bg-amber-100 text-amber-800'
+                                  : subject.gradeLetter === 'D'
+                                    ? 'bg-orange-100 text-orange-800'
+                                    : 'bg-red-100 text-red-800'
                           }`}
                         >
                           {subject.gradeLetter || '—'}

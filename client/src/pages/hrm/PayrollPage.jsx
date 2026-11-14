@@ -4,11 +4,12 @@
 // kat-school/client/src/pages/hrm/PayrollPage.jsx
 // ============================================
 
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
-import api from '../../services/api';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { useSearchParams } from 'react-router-dom';
+
+import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 
 const MONTHS = [
@@ -44,7 +45,9 @@ const PayrollPage = () => {
   const updateParam = (key, value) => {
     const next = new URLSearchParams(searchParams);
     value ? next.set(key, value) : next.delete(key);
-    if (key !== 'page') next.set('page', '1');
+    if (key !== 'page') {
+      next.set('page', '1');
+    }
     setSearchParams(next);
   };
 
@@ -85,7 +88,9 @@ const PayrollPage = () => {
   });
 
   const handleGeneratePayroll = async () => {
-    if (!confirm(`Generate payroll for ${MONTHS[month - 1]} ${year}?`)) return;
+    if (!confirm(`Generate payroll for ${MONTHS[month - 1]} ${year}?`)) {
+      return;
+    }
     setGenerating(true);
     try {
       const res = await api.post('/hrm/payroll/process', {
@@ -112,8 +117,11 @@ const PayrollPage = () => {
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.length === payrolls.length) setSelectedIds([]);
-    else setSelectedIds(payrolls.map((p) => p._id));
+    if (selectedIds.length === payrolls.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(payrolls.map((p) => p._id));
+    }
   };
 
   return (

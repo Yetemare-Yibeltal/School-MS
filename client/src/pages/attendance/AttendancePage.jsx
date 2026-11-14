@@ -4,10 +4,11 @@
 // kat-school/client/src/pages/attendance/AttendancePage.jsx
 // ============================================
 
-import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../../services/api';
+import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+
+import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 
 const ATTENDANCE_STATUSES = [
@@ -93,7 +94,9 @@ const AttendancePage = () => {
       const rmarks = {};
       Object.entries(existingAttendance.attendanceMap).forEach(([studentId, att]) => {
         map[studentId] = att.status;
-        if (att.remarks) rmarks[studentId] = att.remarks;
+        if (att.remarks) {
+          rmarks[studentId] = att.remarks;
+        }
       });
       setAttendanceMap(map);
       setRemarksMap(rmarks);
@@ -413,10 +416,10 @@ const AttendancePage = () => {
                             currentStatus === 'present'
                               ? 'badge-success'
                               : currentStatus === 'absent'
-                              ? 'badge-danger'
-                              : currentStatus === 'late'
-                              ? 'badge-warning'
-                              : 'badge-info'
+                                ? 'badge-danger'
+                                : currentStatus === 'late'
+                                  ? 'badge-warning'
+                                  : 'badge-info'
                           }`}
                         >
                           {currentStatus}

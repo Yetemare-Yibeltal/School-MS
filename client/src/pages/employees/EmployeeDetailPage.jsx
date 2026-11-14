@@ -4,12 +4,13 @@
 // kat-school/client/src/pages/employees/EmployeeDetailPage.jsx
 // ============================================
 
-import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useState } from 'react';
+import toast from 'react-hot-toast';
+import { useParams, Link } from 'react-router-dom';
+
 import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
-import toast from 'react-hot-toast';
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: '👤' },
@@ -80,7 +81,9 @@ const EmployeeDetailPage = () => {
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      return;
+    }
     setPhotoUploading(true);
     const formData = new FormData();
     formData.append('photo', file);
@@ -194,8 +197,8 @@ const EmployeeDetailPage = () => {
                         employee.status === 'active'
                           ? 'badge-success'
                           : employee.status === 'on_leave'
-                          ? 'badge-warning'
-                          : 'badge-gray'
+                            ? 'badge-warning'
+                            : 'badge-gray'
                       }`}
                     >
                       {employee.status?.replace('_', ' ')}
@@ -247,7 +250,9 @@ const EmployeeDetailPage = () => {
         <div className="border-t border-slate-100 overflow-x-auto no-scrollbar">
           <nav className="flex px-4">
             {TABS.map((tab) => {
-              if ((tab.id === 'attendance' || tab.id === 'payroll') && !canManage) return null;
+              if ((tab.id === 'attendance' || tab.id === 'payroll') && !canManage) {
+                return null;
+              }
               return (
                 <button
                   key={tab.id}
@@ -429,10 +434,10 @@ const EmployeeDetailPage = () => {
                               rec.status === 'present'
                                 ? 'badge-success'
                                 : rec.status === 'absent'
-                                ? 'badge-danger'
-                                : rec.status === 'late'
-                                ? 'badge-warning'
-                                : 'badge-gray'
+                                  ? 'badge-danger'
+                                  : rec.status === 'late'
+                                    ? 'badge-warning'
+                                    : 'badge-gray'
                             }`}
                           >
                             {rec.status?.replace('_', ' ')}
@@ -521,8 +526,8 @@ const EmployeeDetailPage = () => {
                               app.status === 'approved'
                                 ? 'badge-success'
                                 : app.status === 'rejected'
-                                ? 'badge-danger'
-                                : 'badge-warning'
+                                  ? 'badge-danger'
+                                  : 'badge-warning'
                             }`}
                           >
                             {app.status}

@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+
 import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 
@@ -19,12 +20,13 @@ const DashboardPage = () => {
     queryFn: async () => (await api.get('/system/dashboard')).data.data,
   });
 
-  if (isError)
+  if (isError) {
     return (
       <div className="card p-8 text-center text-slate-500">
         Could not load the dashboard. Check that the API server is running.
       </div>
     );
+  }
 
   const o = data?.overview || {};
   const a = data?.alerts || {};

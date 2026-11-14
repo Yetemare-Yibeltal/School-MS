@@ -4,11 +4,12 @@
 // kat-school/client/src/pages/finance/FeeCollectionPage.jsx
 // ============================================
 
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../../services/api';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { useSearchParams } from 'react-router-dom';
+
+import api from '../../services/api';
 
 const GRADES = ['Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 const PAYMENT_METHODS = ['Cash', 'Bank Transfer', 'Telebirr', 'CBE Birr', 'Cheque', 'Other'];
@@ -38,20 +39,27 @@ const PaymentModal = ({ assignment, student, onClose, onSuccess }) => {
 
   const validate = () => {
     const newErrors = {};
-    if (!form.amount || parseFloat(form.amount) <= 0)
+    if (!form.amount || parseFloat(form.amount) <= 0) {
       newErrors.amount = 'Valid amount is required.';
+    }
     if (parseFloat(form.amount) > assignment.remainingAmount) {
       newErrors.amount = `Cannot exceed remaining balance (ETB ${assignment.remainingAmount}).`;
     }
-    if (!form.method) newErrors.method = 'Payment method is required.';
-    if (!form.payerName.trim()) newErrors.payerName = 'Payer name is required.';
+    if (!form.method) {
+      newErrors.method = 'Payment method is required.';
+    }
+    if (!form.payerName.trim()) {
+      newErrors.payerName = 'Payer name is required.';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      return;
+    }
 
     collectMutation.mutate({
       feeAssignment: assignment._id,
@@ -129,7 +137,9 @@ const PaymentModal = ({ assignment, student, onClose, onSuccess }) => {
                 value={form.amount}
                 onChange={(e) => {
                   setForm((p) => ({ ...p, amount: e.target.value }));
-                  if (errors.amount) setErrors((p) => ({ ...p, amount: null }));
+                  if (errors.amount) {
+                    setErrors((p) => ({ ...p, amount: null }));
+                  }
                 }}
                 min="1"
                 max={assignment.remainingAmount}
@@ -181,7 +191,9 @@ const PaymentModal = ({ assignment, student, onClose, onSuccess }) => {
                 value={form.payerName}
                 onChange={(e) => {
                   setForm((p) => ({ ...p, payerName: e.target.value }));
-                  if (errors.payerName) setErrors((p) => ({ ...p, payerName: null }));
+                  if (errors.payerName) {
+                    setErrors((p) => ({ ...p, payerName: null }));
+                  }
                 }}
                 className={errors.payerName ? 'form-input-error' : 'form-input'}
               />
@@ -257,7 +269,9 @@ const FeeCollectionPage = () => {
   const updateParam = (key, value) => {
     const next = new URLSearchParams(searchParams);
     value ? next.set(key, value) : next.delete(key);
-    if (key !== 'page') next.set('page', '1');
+    if (key !== 'page') {
+      next.set('page', '1');
+    }
     setSearchParams(next);
   };
 
@@ -456,10 +470,10 @@ const FeeCollectionPage = () => {
                             assignment.status === 'paid'
                               ? 'badge-success'
                               : assignment.status === 'partial'
-                              ? 'badge-warning'
-                              : assignment.status === 'overdue'
-                              ? 'badge-danger'
-                              : 'badge-gray'
+                                ? 'badge-warning'
+                                : assignment.status === 'overdue'
+                                  ? 'badge-danger'
+                                  : 'badge-gray'
                           }`}
                         >
                           {assignment.status}

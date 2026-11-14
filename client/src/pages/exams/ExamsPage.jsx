@@ -4,11 +4,12 @@
 // kat-school/client/src/pages/exams/ExamsPage.jsx
 // ============================================
 
-import React, { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../../services/api';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { Link, useSearchParams } from 'react-router-dom';
+
+import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 
 const GRADES = ['Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
@@ -41,7 +42,9 @@ const ExamsPage = () => {
   const updateParam = (key, value) => {
     const next = new URLSearchParams(searchParams);
     value ? next.set(key, value) : next.delete(key);
-    if (key !== 'page') next.set('page', '1');
+    if (key !== 'page') {
+      next.set('page', '1');
+    }
     setSearchParams(next);
   };
 
@@ -331,34 +334,14 @@ const ExamsPage = () => {
                             />
                           </svg>
                         </Link>
-                        {canManage && exam.status !== 'completed' && exam.status !== 'cancelled' && (
-                          <>
-                            <Link
-                              to={`/exams/${exam._id}/results`}
-                              className="btn-icon btn-ghost"
-                              title="Enter Results"
-                            >
-                              <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                />
-                              </svg>
-                            </Link>
-                            {exam.status === 'scheduled' && (
-                              <button
-                                onClick={() =>
-                                  updateStatusMutation.mutate({ id: exam._id, status: 'ongoing' })
-                                }
-                                className="btn-icon text-green-500 hover:bg-green-50"
-                                title="Mark Ongoing"
+                        {canManage &&
+                          exam.status !== 'completed' &&
+                          exam.status !== 'cancelled' && (
+                            <>
+                              <Link
+                                to={`/exams/${exam._id}/results`}
+                                className="btn-icon btn-ghost"
+                                title="Enter Results"
                               >
                                 <svg
                                   className="w-4 h-4"
@@ -370,19 +353,42 @@ const ExamsPage = () => {
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                     strokeWidth={2}
-                                    d="M5 13l4 4L19 7"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                                   />
                                 </svg>
-                              </button>
-                            )}
-                          </>
-                        )}
+                              </Link>
+                              {exam.status === 'scheduled' && (
+                                <button
+                                  onClick={() =>
+                                    updateStatusMutation.mutate({ id: exam._id, status: 'ongoing' })
+                                  }
+                                  className="btn-icon text-green-500 hover:bg-green-50"
+                                  title="Mark Ongoing"
+                                >
+                                  <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M5 13l4 4L19 7"
+                                    />
+                                  </svg>
+                                </button>
+                              )}
+                            </>
+                          )}
                         {['super_admin', 'admin'].includes(user?.role) &&
                           !['completed'].includes(exam.status) && (
                             <button
                               onClick={() => {
-                                if (confirm(`Delete exam "${exam.title}"?`))
+                                if (confirm(`Delete exam "${exam.title}"?`)) {
                                   deleteMutation.mutate(exam._id);
+                                }
                               }}
                               className="btn-icon text-slate-400 hover:text-red-500 hover:bg-red-50"
                               title="Delete"
@@ -465,10 +471,10 @@ const ExamsPage = () => {
                       result.gradeLetter === 'A'
                         ? 'bg-green-100 text-green-800'
                         : result.gradeLetter === 'B'
-                        ? 'bg-blue-100 text-blue-800'
-                        : result.gradeLetter === 'C'
-                        ? 'bg-amber-100 text-amber-800'
-                        : 'bg-red-100 text-red-800'
+                          ? 'bg-blue-100 text-blue-800'
+                          : result.gradeLetter === 'C'
+                            ? 'bg-amber-100 text-amber-800'
+                            : 'bg-red-100 text-red-800'
                     }`}
                   >
                     {result.gradeLetter}

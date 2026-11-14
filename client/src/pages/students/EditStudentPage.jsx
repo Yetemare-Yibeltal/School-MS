@@ -4,11 +4,12 @@
 // kat-school/client/src/pages/students/EditStudentPage.jsx
 // ============================================
 
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import api from '../../services/api';
+import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+
+import api from '../../services/api';
 
 const GRADES = ['Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 const RELIGIONS = ['Orthodox', 'Muslim', 'Protestant', 'Catholic', 'Traditional', 'Other'];
@@ -98,29 +99,45 @@ const EditStudentPage = () => {
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Update failed.');
-      if (err.response?.data?.errors) setErrors(err.response.data.errors);
+      if (err.response?.data?.errors) {
+        setErrors(err.response.data.errors);
+      }
     },
   });
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: null }));
+    }
   };
 
   const validate = () => {
     const newErrors = {};
-    if (!form.firstName.trim()) newErrors.firstName = 'First name is required.';
-    if (!form.fatherName.trim()) newErrors.fatherName = "Father's name is required.";
-    if (!form.gender) newErrors.gender = 'Gender is required.';
-    if (!form.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required.';
-    if (!form.grade) newErrors.grade = 'Grade is required.';
+    if (!form.firstName.trim()) {
+      newErrors.firstName = 'First name is required.';
+    }
+    if (!form.fatherName.trim()) {
+      newErrors.fatherName = "Father's name is required.";
+    }
+    if (!form.gender) {
+      newErrors.gender = 'Gender is required.';
+    }
+    if (!form.dateOfBirth) {
+      newErrors.dateOfBirth = 'Date of birth is required.';
+    }
+    if (!form.grade) {
+      newErrors.grade = 'Grade is required.';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      return;
+    }
 
     const payload = {
       firstName: form.firstName.trim(),
