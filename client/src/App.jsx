@@ -11,6 +11,14 @@ const DashboardPage = lazy(() => import('./pages/dashboard/DashboardPage'));
 const NotFoundPage = lazy(() => import('./pages/errors/NotFoundPage'));
 const UnauthorizedPage = lazy(() => import('./pages/errors/UnauthorizedPage'));
 
+const StudentsPage = lazy(() => import('./pages/students/StudentsPage'));
+const StudentDetailPage = lazy(() => import('./pages/students/StudentDetailPage'));
+const AddStudentPage = lazy(() => import('./pages/students/AddStudentPage'));
+const EditStudentPage = lazy(() => import('./pages/students/EditStudentPage'));
+
+const STUDENT_VIEW = ['super_admin', 'admin', 'teacher', 'receptionist', 'accountant', 'librarian'];
+const STUDENT_EDIT = ['super_admin', 'admin', 'receptionist'];
+
 const App = () => (
   <Suspense fallback={<PageLoader />}>
     <Routes>
@@ -34,6 +42,39 @@ const App = () => (
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+
+        <Route
+          path="/students"
+          element={
+            <ProtectedRoute roles={STUDENT_VIEW}>
+              <StudentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/students/new"
+          element={
+            <ProtectedRoute roles={STUDENT_EDIT}>
+              <AddStudentPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/students/:id"
+          element={
+            <ProtectedRoute roles={STUDENT_VIEW}>
+              <StudentDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/students/:id/edit"
+          element={
+            <ProtectedRoute roles={STUDENT_EDIT}>
+              <EditStudentPage />
+            </ProtectedRoute>
+          }
+        />
       </Route>
 
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
@@ -41,4 +82,5 @@ const App = () => (
     </Routes>
   </Suspense>
 );
+
 export default App;
