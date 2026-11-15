@@ -477,7 +477,7 @@ const StudentsPage = () => {
         {pagination.totalPages > 1 && (
           <div className="px-5 py-4 border-t border-slate-100 flex items-center justify-between">
             <p className="text-sm text-slate-500">
-              Showing {pagination.from}–{pagination.to} of {pagination.total.toLocaleString()}
+              Page {page} of {pagination.totalPages} ({pagination.total} students)
             </p>
             <div className="flex items-center gap-1">
               <button
