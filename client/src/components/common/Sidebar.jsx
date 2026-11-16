@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
-
 import { useAuthStore } from '../../store/authStore';
 
+const ADMIN = ['super_admin', 'admin'];
 const LINKS = [
   { to: '/dashboard', icon: '🏠', label: 'Dashboard', roles: null },
   {
@@ -10,28 +10,36 @@ const LINKS = [
     label: 'Students',
     roles: ['super_admin', 'admin', 'teacher', 'receptionist', 'accountant', 'librarian'],
   },
-  { to: '/teachers', icon: '👨‍🏫', label: 'Teachers', roles: ['super_admin', 'admin', 'hr_manager'] },
+  { to: '/teachers', icon: '👨‍🏫', label: 'Teachers', roles: [...ADMIN, 'hr_manager'] },
+  { to: '/employees', icon: '👔', label: 'Employees', roles: [...ADMIN, 'hr_manager'] },
+  { to: '/academic/years', icon: '📅', label: 'Academic Years', roles: ADMIN },
   {
-    to: '/employees',
-    icon: '👔',
-    label: 'Employees',
-    roles: ['super_admin', 'admin', 'hr_manager'],
+    to: '/academic/classes',
+    icon: '🏛️',
+    label: 'Classes',
+    roles: [...ADMIN, 'teacher', 'receptionist'],
   },
-  { to: '/academic/years', icon: '📅', label: 'Academic Years', roles: ['super_admin', 'admin'] },
+  {
+    to: '/academic/sections',
+    icon: '🚪',
+    label: 'Sections',
+    roles: [...ADMIN, 'teacher', 'receptionist'],
+  },
   { to: '/academic/subjects', icon: '📖', label: 'Subjects', roles: null },
+  { to: '/academic/timetable', icon: '⏰', label: 'Timetable', roles: null },
   {
     to: '/attendance',
     icon: '✅',
     label: 'Attendance',
-    roles: ['super_admin', 'admin', 'teacher', 'receptionist'],
+    roles: [...ADMIN, 'teacher', 'receptionist'],
   },
-  { to: '/exams', icon: '📝', label: 'Exams', roles: ['super_admin', 'admin', 'teacher'] },
-  { to: '/finance', icon: '💰', label: 'Finance', roles: ['super_admin', 'admin', 'accountant'] },
-  { to: '/hrm', icon: '🏢', label: 'HRM', roles: ['super_admin', 'admin', 'hr_manager'] },
-  { to: '/library', icon: '📚', label: 'Library', roles: ['super_admin', 'admin', 'librarian'] },
+  { to: '/exams', icon: '📝', label: 'Exams', roles: [...ADMIN, 'teacher'] },
+  { to: '/finance', icon: '💰', label: 'Finance', roles: [...ADMIN, 'accountant'] },
+  { to: '/hrm', icon: '🏢', label: 'HRM', roles: [...ADMIN, 'hr_manager'] },
+  { to: '/library', icon: '📚', label: 'Library', roles: [...ADMIN, 'librarian'] },
   { to: '/notices', icon: '📢', label: 'Notices', roles: null },
   { to: '/ai/assistant', icon: '🤖', label: 'AI Assistant', roles: null },
-  { to: '/settings', icon: '⚙️', label: 'Settings', roles: ['super_admin', 'admin'] },
+  { to: '/settings', icon: '⚙️', label: 'Settings', roles: ADMIN },
 ];
 
 const Sidebar = ({ onNavigate }) => {
@@ -70,7 +78,7 @@ const Sidebar = ({ onNavigate }) => {
           {user?.firstName} {user?.fatherName}
         </p>
         <p className="text-xs text-slate-500 capitalize mb-2">{user?.role?.replace('_', ' ')}</p>
-        <button onClick={logout} className="btn-outline btn-sm w-full">
+        <button type="button" onClick={logout} className="btn-outline btn-sm w-full">
           Sign out
         </button>
       </div>
