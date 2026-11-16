@@ -26,9 +26,17 @@ const EmployeeDetailPage = lazy(() => import('./pages/employees/EmployeeDetailPa
 const AddEmployeePage = lazy(() => import('./pages/employees/AddEmployeePage'));
 const EditEmployeePage = lazy(() => import('./pages/employees/EditEmployeePage'));
 
-const STUDENT_VIEW = ['super_admin', 'admin', 'teacher', 'receptionist', 'accountant', 'librarian'];
-const STUDENT_EDIT = ['super_admin', 'admin', 'receptionist'];
-const HR = ['super_admin', 'admin', 'hr_manager'];
+const AcademicYearsPage = lazy(() => import('./pages/academic/AcademicYearsPage'));
+const SubjectsPage = lazy(() => import('./pages/academic/SubjectsPage'));
+const ClassesPage = lazy(() => import('./pages/academic/ClassesPage'));
+const SectionsPage = lazy(() => import('./pages/academic/SectionsPage'));
+const TimetablePage = lazy(() => import('./pages/academic/TimetablePage'));
+
+const ADMIN = ['super_admin', 'admin'];
+const STUDENT_VIEW = [...ADMIN, 'teacher', 'receptionist', 'accountant', 'librarian'];
+const STUDENT_EDIT = [...ADMIN, 'receptionist'];
+const HR = [...ADMIN, 'hr_manager'];
+const STAFF = [...ADMIN, 'teacher', 'receptionist'];
 
 const guard = (roles, element) => <ProtectedRoute roles={roles}>{element}</ProtectedRoute>;
 
@@ -70,6 +78,12 @@ const App = () => (
         <Route path="/employees/new" element={guard(HR, <AddEmployeePage />)} />
         <Route path="/employees/:id" element={guard(HR, <EmployeeDetailPage />)} />
         <Route path="/employees/:id/edit" element={guard(HR, <EditEmployeePage />)} />
+
+        <Route path="/academic/years" element={guard(ADMIN, <AcademicYearsPage />)} />
+        <Route path="/academic/classes" element={guard(STAFF, <ClassesPage />)} />
+        <Route path="/academic/sections" element={guard(STAFF, <SectionsPage />)} />
+        <Route path="/academic/subjects" element={<SubjectsPage />} />
+        <Route path="/academic/timetable" element={<TimetablePage />} />
       </Route>
 
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
