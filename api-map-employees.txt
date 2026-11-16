@@ -1,0 +1,43 @@
+
+##### /api/employees   (employee.routes.js)
+
+GET /api/employees/stats   roles: ...hrRoles
+   returns: .json({ success: true, message: 'Employee dashboard stats fetched.', data: { total, active, inactive: total - active, byDepartment, byEmploymentType, byQualification, recentlyJoined, }, }); });
+
+GET /api/employees   roles: ...hrRoles, 'receptionist'
+   query: department, designation, employmentType, qualification, status = 'active', gender, search, page = 1, limit = 20, sort = 'firstName', order = 'asc',
+   returns: .json({ success: true, message: 'Employees fetched successfully.', data: { employees }, pagination: { total, page: parseInt(page), limit: parseInt(limit), totalPages, hasNextPage: parseInt(page) < totalPages, hasPreviousPage: parseInt(page) > 1, }, }); }); // ─── Get Employee by ID ───────────────────────
+   (paginated)
+
+POST /api/employees   roles: ...hrRoles
+   body: firstName, fatherName, grandFatherName, firstNameAmharic, fatherNameAmharic, gender, dateOfBirth, nationality, religion, bloodGroup, maritalStatus, numberOfDependents, phone, alternatePhone, email, address, emergencyContact, department, designation, qualification, fieldOfStudy, university, yearsOfExperience, joinDate, employmentType, contractEndDate, salary, tinNumber, pensionNumber, nationalIdNumber, notes,
+   returns: .json({ success: true, message: 'Employee created successfully.', data: { employee }, }); }); // ─── Get All Employees ────────────────────────
+
+GET /api/employees/:id   roles: ...hrRoles
+   returns: .json({ success: true, message: 'Employee fetched.', data: { employee }, }); }); // ─── Update Employee ──────────────────────────
+
+PATCH /api/employees/:id   roles: ...hrRoles
+   body: department, departmentName, designation, designationName, designationCode
+   returns: .json({ success: true, message: 'Employee updated successfully.', data: { employee }, }); }); // ─── Delete Employee ──────────────────────────
+
+DELETE /api/employees/:id   roles: 'super_admin', 'admin'
+   returns: .json({ success: true, message: 'Employee record deactivated.', }); }); // ─── Upload Employee Photo ────────────────────
+
+POST /api/employees/:id/photo   roles: ...hrRoles
+   returns: .json({ success: true, message: 'Photo uploaded.', data: { photo: employee.photo }, }); }); // ─── Get Employee Attendance Summary ──────────
+
+GET /api/employees/:id/attendance   roles: ...hrRoles
+   query: month, year
+   returns: .json({ success: true, message: 'Attendance summary fetched.', data: { stats, attendance }, }); }); // ─── Get Employee Leave Balances ──────────────
+
+GET /api/employees/:id/leave-balances   roles: ...hrRoles
+   returns: .json({ success: true, message: 'Leave balances fetched.', data: { balances }, }); }); // ─── Get Employee Leave Applications ──────────
+
+GET /api/employees/:id/leave-applications   roles: ...hrRoles
+   query: status, page = 1, limit = 20
+   returns: .json({ success: true, message: 'Leave applications fetched.', data: { applications }, pagination: { total, page: parseInt(page), totalPages: Math.ceil(total / parseInt(limit)), }, }); }); // ─── Get Employee Payroll History ─────────────
+   (paginated)
+
+GET /api/employees/:id/payroll   roles: ...hrRoles
+   query: year, limit = 12
+   returns: .json({ success: true, message: 'Payroll history fetched.', data: { payrolls }, }); }); // ─── Get Dashboard Stats ──────────────────────

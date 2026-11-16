@@ -1,16 +1,12 @@
 import { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-
+import AuthLayout from './layouts/AuthLayout';
+import MainLayout from './layouts/MainLayout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import PublicRoute from './components/auth/PublicRoute';
 import PageLoader from './components/common/PageLoader';
-import AuthLayout from './layouts/AuthLayout';
-import MainLayout from './layouts/MainLayout';
 
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
-
-const EditTeacherPage = lazy(() => import('./pages/teachers/EditTeacherPage'));
-
 const DashboardPage = lazy(() => import('./pages/dashboard/DashboardPage'));
 const NotFoundPage = lazy(() => import('./pages/errors/NotFoundPage'));
 const UnauthorizedPage = lazy(() => import('./pages/errors/UnauthorizedPage'));
@@ -23,10 +19,18 @@ const EditStudentPage = lazy(() => import('./pages/students/EditStudentPage'));
 const TeachersPage = lazy(() => import('./pages/teachers/TeachersPage'));
 const TeacherDetailPage = lazy(() => import('./pages/teachers/TeacherDetailPage'));
 const AddTeacherPage = lazy(() => import('./pages/teachers/AddTeacherPage'));
+const EditTeacherPage = lazy(() => import('./pages/teachers/EditTeacherPage'));
+
+const EmployeesPage = lazy(() => import('./pages/employees/EmployeesPage'));
+const EmployeeDetailPage = lazy(() => import('./pages/employees/EmployeeDetailPage'));
+const AddEmployeePage = lazy(() => import('./pages/employees/AddEmployeePage'));
+const EditEmployeePage = lazy(() => import('./pages/employees/EditEmployeePage'));
 
 const STUDENT_VIEW = ['super_admin', 'admin', 'teacher', 'receptionist', 'accountant', 'librarian'];
 const STUDENT_EDIT = ['super_admin', 'admin', 'receptionist'];
 const HR = ['super_admin', 'admin', 'hr_manager'];
+
+const guard = (roles, element) => <ProtectedRoute roles={roles}>{element}</ProtectedRoute>;
 
 const App = () => (
   <Suspense fallback={<PageLoader />}>
@@ -51,71 +55,21 @@ const App = () => (
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route
-          path="/students"
-          element={
-            <ProtectedRoute roles={STUDENT_VIEW}>
-              <StudentsPage />
-            </ProtectedRoute>
-          }
-        />
-        ;
-        <Route
-          path="/teachers/:id/edit"
-          element={
-            <ProtectedRoute roles={HR}>
-              <EditTeacherPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/students/new"
-          element={
-            <ProtectedRoute roles={STUDENT_EDIT}>
-              <AddStudentPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/students/:id"
-          element={
-            <ProtectedRoute roles={STUDENT_VIEW}>
-              <StudentDetailPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/students/:id/edit"
-          element={
-            <ProtectedRoute roles={STUDENT_EDIT}>
-              <EditStudentPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/teachers"
-          element={
-            <ProtectedRoute roles={HR}>
-              <TeachersPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/teachers/new"
-          element={
-            <ProtectedRoute roles={HR}>
-              <AddTeacherPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/teachers/:id"
-          element={
-            <ProtectedRoute roles={HR}>
-              <TeacherDetailPage />
-            </ProtectedRoute>
-          }
-        />
+
+        <Route path="/students" element={guard(STUDENT_VIEW, <StudentsPage />)} />
+        <Route path="/students/new" element={guard(STUDENT_EDIT, <AddStudentPage />)} />
+        <Route path="/students/:id" element={guard(STUDENT_VIEW, <StudentDetailPage />)} />
+        <Route path="/students/:id/edit" element={guard(STUDENT_EDIT, <EditStudentPage />)} />
+
+        <Route path="/teachers" element={guard(HR, <TeachersPage />)} />
+        <Route path="/teachers/new" element={guard(HR, <AddTeacherPage />)} />
+        <Route path="/teachers/:id" element={guard(HR, <TeacherDetailPage />)} />
+        <Route path="/teachers/:id/edit" element={guard(HR, <EditTeacherPage />)} />
+
+        <Route path="/employees" element={guard(HR, <EmployeesPage />)} />
+        <Route path="/employees/new" element={guard(HR, <AddEmployeePage />)} />
+        <Route path="/employees/:id" element={guard(HR, <EmployeeDetailPage />)} />
+        <Route path="/employees/:id/edit" element={guard(HR, <EditEmployeePage />)} />
       </Route>
 
       <Route path="/unauthorized" element={<UnauthorizedPage />} />

@@ -1,0 +1,46 @@
+
+##### /api/teachers   (teacher.routes.js)
+
+GET /api/teachers/stats   roles: 'super_admin', 'admin', 'hr_manager'
+   returns: .json({ success: true, message: 'Teacher dashboard stats fetched.', data: { total, active, inactive: total - active, bySubject, byQualification, byEmploymentType, recentlyJoined, }, }); });
+
+GET /api/teachers   roles: 'super_admin', 'admin', 'hr_manager', 'receptionist'
+   query: primarySubject, employmentType, qualification, status = 'active', gender, search, page = 1, limit = 20, sort = 'firstName', order = 'asc',
+   returns: .json({ success: true, message: 'Teachers fetched successfully.', data: { teachers }, pagination: { total, page: parseInt(page), limit: parseInt(limit), totalPages, hasNextPage: parseInt(page) < totalPages, hasPreviousPage: parseInt(page) > 1, }, }); }); // ─── Get Teacher by ID ────────────────────────
+   (paginated)
+
+POST /api/teachers   roles: 'super_admin', 'admin', 'hr_manager'
+   body: firstName, fatherName, grandFatherName, firstNameAmharic, fatherNameAmharic, gender, dateOfBirth, nationality, religion, bloodGroup, phone, alternatePhone, email, address, primarySubject, secondarySubjects, gradesCanTeach, qualification, fieldOfStudy, university, yearOfGraduation, teachingLicenseNumber, teachingLicenseExpiry, yearsOfExperience, previousSchool, joinDate, employmentType, contractEndDate, isHomeRoomTeacher, homeRoomSection, salary, tinNumber, pensionNumber, nationalIdNumber, notes,
+   returns: .json({ success: true, message: 'Teacher created successfully.', data: { teacher }, }); }); // ─── Get All Teachers ─────────────────────────
+
+GET /api/teachers/:id   roles: 'super_admin', 'admin', 'hr_manager', 'teacher', 'receptionist'
+   returns: .json({ success: true, message: 'Teacher fetched.', data: { teacher }, }); }); // ─── Update Teacher ───────────────────────────
+
+PATCH /api/teachers/:id   roles: 'super_admin', 'admin', 'hr_manager'
+   body: isHomeRoomTeacher, homeRoomSection
+   returns: .json({ success: true, message: 'Teacher updated successfully.', data: { teacher }, }); }); // ─── Delete Teacher ───────────────────────────
+
+DELETE /api/teachers/:id   roles: 'super_admin', 'admin'
+   returns: .json({ success: true, message: 'Teacher record deactivated.', }); }); // ─── Upload Teacher Photo ─────────────────────
+
+POST /api/teachers/:id/photo   roles: 'super_admin', 'admin', 'hr_manager'
+   returns: .json({ success: true, message: 'Photo uploaded.', data: { photo: teacher.photo }, }); }); // ─── Get Teacher Timetable ────────────────────
+
+GET /api/teachers/:id/timetable   roles: 'super_admin', 'admin', 'teacher', 'receptionist'
+   returns: .json({ success: true, message: 'Teacher timetable fetched.', data: { slots }, }); }); // ─── Get Teacher Attendance Summary ───────────
+
+GET /api/teachers/:id/attendance   roles: 'super_admin', 'admin', 'hr_manager', 'teacher'
+   query: month, year
+   returns: .json({ success: true, message: 'Attendance summary fetched.', data: { stats, attendance }, }); }); // ─── Get Teacher Leave Balances ───────────────
+
+GET /api/teachers/:id/leave-balances   roles: 'super_admin', 'admin', 'hr_manager', 'teacher'
+   returns: .json({ success: true, message: 'Leave balances fetched.', data: { balances }, }); }); // ─── Get Teacher Leave Applications ───────────
+
+GET /api/teachers/:id/leave-applications   roles: 'super_admin', 'admin', 'hr_manager', 'teacher'
+   query: status, page = 1, limit = 20
+   returns: .json({ success: true, message: 'Leave applications fetched.', data: { applications }, pagination: { total, page: parseInt(page), totalPages: Math.ceil(total / parseInt(limit)), }, }); }); // ─── Get Teacher Payroll History ──────────────
+   (paginated)
+
+GET /api/teachers/:id/payroll   roles: 'super_admin', 'admin', 'hr_manager', 'accountant'
+   query: year, limit = 12
+   returns: .json({ success: true, message: 'Payroll history fetched.', data: { payrolls }, }); }); // ─── Get Dashboard Stats ──────────────────────

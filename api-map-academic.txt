@@ -1,0 +1,155 @@
+
+##### /api/academic   (academic.routes.js)
+
+GET /api/academic/dashboard
+   returns: .json({ success: true, message: 'Academic dashboard fetched.', data: { currentAcademicYear: currentYear, currentTerm, totalClasses, totalSections, totalSubjects, totalRooms, totalStudents, totalTeachers, sectionsByGrade, }, }); });
+
+GET /api/academic/years/current
+   returns: .json({ success: true, message: 'Current academic year fetched.', data: { academicYear: { ...academicYear.toObject(), terms } }, }); }); // ═══════════════════════════════════════════ // TERM // ═══════════════════════════════════════════
+
+GET /api/academic/years
+   returns: .json({ success: true, message: 'Academic years fetched.', data: { academicYears }, }); });
+
+POST /api/academic/years   roles: ...adminRoles
+   body: name, startDate, endDate, isCurrent, description
+   returns: .json({ success: true, message: 'Academic year created successfully.', data: { academicYear }, }); });
+
+GET /api/academic/years/:id
+   returns: .json({ success: true, message: 'Academic year fetched.', data: { academicYear }, }); });
+
+PATCH /api/academic/years/:id   roles: ...adminRoles
+   body: isCurrent
+   returns: .json({ success: true, message: 'Academic year updated.', data: { academicYear }, }); });
+
+DELETE /api/academic/years/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Academic year deleted.', }); });
+
+GET /api/academic/terms/current
+   returns: .json({ success: true, message: 'Current term fetched.', data: { term }, }); }); // ═══════════════════════════════════════════ // CLASS // ═══════════════════════════════════════════
+
+GET /api/academic/terms
+   query: academicYear
+   returns: .json({ success: true, message: 'Terms fetched.', data: { terms }, }); });
+
+POST /api/academic/terms   roles: ...adminRoles
+   body: name, termNumber, academicYear, startDate, endDate, isCurrent, description
+   returns: .json({ success: true, message: 'Term created successfully.', data: { term }, }); });
+
+GET /api/academic/terms/:id
+   returns: .json({ success: true, message: 'Term fetched.', data: { term }, }); });
+
+PATCH /api/academic/terms/:id   roles: ...adminRoles
+   body: isCurrent
+   returns: .json({ success: true, message: 'Term updated.', data: { term }, }); });
+
+DELETE /api/academic/terms/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Term deleted.', }); });
+
+GET /api/academic/classes   roles: ...staffRoles
+   query: grade, academicYear, search
+   returns: .json({ success: true, message: 'Classes fetched.', data: { classes }, }); });
+
+POST /api/academic/classes   roles: ...adminRoles
+   body: name, grade, academicYear, classTeacher, capacity, description
+   returns: .json({ success: true, message: 'Class created successfully.', data: { class: classDoc }, }); });
+
+GET /api/academic/classes/:id   roles: ...staffRoles
+   returns: .json({ success: true, message: 'Class fetched.', data: { class: classDoc }, }); });
+
+PATCH /api/academic/classes/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Class updated.', data: { class: classDoc }, }); });
+
+DELETE /api/academic/classes/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Class deleted.', }); }); // ═══════════════════════════════════════════ // SECTION // ═══════════════════════════════════════════
+
+GET /api/academic/sections   roles: ...staffRoles
+   query: grade, academicYear, classId, search
+   returns: .json({ success: true, message: 'Sections fetched.', data: { sections }, }); });
+
+POST /api/academic/sections   roles: ...adminRoles
+   body: name, class: classId, grade, academicYear, classTeacher, capacity, room
+   returns: .json({ success: true, message: 'Section created successfully.', data: { section }, }); });
+
+GET /api/academic/sections/:id   roles: ...staffRoles
+   returns: .json({ success: true, message: 'Section fetched.', data: { section, students }, }); });
+
+PATCH /api/academic/sections/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Section updated.', data: { section }, }); });
+
+DELETE /api/academic/sections/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Section deleted.', }); }); // ═══════════════════════════════════════════ // SUBJECT // ═══════════════════════════════════════════
+
+GET /api/academic/subjects
+   query: grade, category, isActive = true, search
+   returns: .json({ success: true, message: 'Subjects fetched.', data: { subjects }, }); });
+
+POST /api/academic/subjects   roles: ...adminRoles
+   body: name, code, grades, category, weeklyHours, periodsPerWeek, isCompulsory, passingScore, fullMarks, caMarks, examMarks, description,
+   returns: .json({ success: true, message: 'Subject created successfully.', data: { subject }, }); });
+
+GET /api/academic/subjects/:id
+   returns: .json({ success: true, message: 'Subject fetched.', data: { subject }, }); });
+
+PATCH /api/academic/subjects/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Subject updated.', data: { subject }, }); });
+
+DELETE /api/academic/subjects/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Subject deactivated.', }); }); // ═══════════════════════════════════════════ // ROOM // ═══════════════════════════════════════════
+
+GET /api/academic/rooms   roles: ...staffRoles
+   query: type, isActive = true, search
+   returns: .json({ success: true, message: 'Rooms fetched.', data: { rooms }, }); });
+
+POST /api/academic/rooms   roles: ...adminRoles
+   body: name, code, type, capacity, floor, building, facilities, description
+   returns: .json({ success: true, message: 'Room created successfully.', data: { room }, }); });
+
+GET /api/academic/rooms/:id   roles: ...staffRoles
+   returns: .json({ success: true, message: 'Room fetched.', data: { room }, }); });
+
+PATCH /api/academic/rooms/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Room updated.', data: { room }, }); });
+
+DELETE /api/academic/rooms/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Room deactivated.', }); }); // ═══════════════════════════════════════════ // TIMETABLE // ═══════════════════════════════════════════
+
+GET /api/academic/timetables
+   query: academicYear, term, grade, section
+   returns: .json({ success: true, message: 'Timetables fetched.', data: { timetables }, }); });
+
+POST /api/academic/timetables   roles: ...adminRoles
+   body: academicYear, term, grade, section, effectiveFrom, effectiveTo, description
+   returns: .json({ success: true, message: 'Timetable created.', data: { timetable }, }); });
+
+GET /api/academic/timetables/:id
+   returns: .json({ success: true, message: 'Timetable fetched.', data: { timetable, slots }, }); });
+
+DELETE /api/academic/timetables/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Timetable deleted.', }); }); // ═══════════════════════════════════════════ // GRADE SCALE // ═══════════════════════════════════════════
+
+POST /api/academic/timetables/:id/slots   roles: ...adminRoles
+   body: timetable, dayOfWeek, periodNumber, startTime, endTime, subject, teacher, room, slotType,
+   returns: .json({ success: true, message: 'Timetable slot created.', data: { slot }, }); });
+
+PATCH /api/academic/timetables/:id/slots/:slotId   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Timetable slot updated.', data: { slot }, }); });
+
+DELETE /api/academic/timetables/:id/slots/:slotId   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Timetable slot removed.', }); });
+
+GET /api/academic/grade-scales
+   returns: .json({ success: true, message: 'Grade scales fetched.', data: { gradeScales }, }); });
+
+GET /api/academic/grade-scales/default
+   returns: .json({ success: true, message: 'Default grade scale fetched.', data: { gradeScale }, }); });
+
+POST /api/academic/grade-scales   roles: ...adminRoles
+   body: name, grades, isDefault
+   returns: .json({ success: true, message: 'Grade scale created.', data: { gradeScale }, }); });
+
+PATCH /api/academic/grade-scales/:id   roles: ...adminRoles
+   body: isDefault
+   returns: .json({ success: true, message: 'Grade scale updated.', data: { gradeScale }, }); });
+
+DELETE /api/academic/grade-scales/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Grade scale deactivated.', }); }); // ═══════════════════════════════════════════ // ACADEMIC DASHBOARD // ═══════════════════════════════════════════

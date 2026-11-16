@@ -1,0 +1,148 @@
+
+##### /api/hrm   (hrm.routes.js)
+
+GET /api/hrm/dashboard   roles: ...hrRoles
+   returns: .json({ success: true, message: 'HRM dashboard fetched.', data: { totalStaff: totalTeachers + totalEmployees, totalTeachers, totalEmployees, departmentStats, pendingLeaves, currentlyOnLeave, payrollStats, }, }); });
+
+GET /api/hrm/departments
+   returns: .json({ success: true, message: 'Departments fetched.', data: { departments }, }); });
+
+POST /api/hrm/departments   roles: ...adminRoles
+   body: name, code, description, head, email, phone, location, annualBudget, color, icon
+   returns: .json({ success: true, message: 'Department created.', data: { department }, }); });
+
+GET /api/hrm/departments/:id
+   returns: .json({ success: true, message: 'Department fetched.', data: { department, employees }, }); });
+
+PATCH /api/hrm/departments/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Department updated.', data: { department }, }); });
+
+DELETE /api/hrm/departments/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Department deactivated.', }); }); // ═══════════════════════════════════════════ // DESIGNATION // ═══════════════════════════════════════════
+
+GET /api/hrm/designations
+   query: department, isTeaching, isManagement
+   returns: .json({ success: true, message: 'Designations fetched.', data: { designations }, }); });
+
+POST /api/hrm/designations   roles: ...adminRoles
+   body: name, code, description, department, level, reportsTo, salaryGrade, minSalary, maxSalary, defaultBasicSalary, minimumQualification, minimumExperience, requiredSkills, responsibilities, defaultAllowances, isTeachingPosition, isManagement, color, icon, sortOrder,
+   returns: .json({ success: true, message: 'Designation created.', data: { designation }, }); });
+
+GET /api/hrm/designations/:id
+   returns: .json({ success: true, message: 'Designation fetched.', data: { designation }, }); });
+
+PATCH /api/hrm/designations/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Designation updated.', data: { designation }, }); });
+
+DELETE /api/hrm/designations/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Designation deactivated.', }); }); // ═══════════════════════════════════════════ // SALARY STRUCTURE // ═══════════════════════════════════════════
+
+GET /api/hrm/salary-structures   roles: ...hrRoles, 'accountant'
+   returns: .json({ success: true, message: 'Salary structures fetched.', data: { structures }, }); });
+
+POST /api/hrm/salary-structures   roles: ...hrRoles
+   body: code, isDefault
+   returns: .json({ success: true, message: 'Salary structure created.', data: { structure }, }); });
+
+GET /api/hrm/salary-structures/:id   roles: ...hrRoles, 'accountant'
+   returns: .json({ success: true, message: 'Salary structure fetched.', data: { structure }, }); });
+
+PATCH /api/hrm/salary-structures/:id   roles: ...hrRoles
+   body: isDefault
+   returns: .json({ success: true, message: 'Salary structure updated.', data: { structure }, }); });
+
+POST /api/hrm/salary-structures/:id/preview   roles: ...hrRoles, 'accountant'
+   body: basicSalary, allowances, absentDays
+   returns: .json({ success: true, message: 'Salary preview calculated.', data: { calculation: result }, }); }); // ═══════════════════════════════════════════ // SALARY COMPONENT // ═══════════════════════════════════════════
+
+GET /api/hrm/salary-components   roles: ...hrRoles, 'accountant'
+   query: type
+   returns: .json({ success: true, message: 'Salary components fetched.', data: { components }, }); });
+
+POST /api/hrm/salary-components   roles: ...adminRoles
+   body: code
+   returns: .json({ success: true, message: 'Salary component created.', data: { component }, }); });
+
+PATCH /api/hrm/salary-components/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Salary component updated.', data: { component }, }); }); // ═══════════════════════════════════════════ // PAYROLL // ═══════════════════════════════════════════
+
+GET /api/hrm/payroll/dashboard   roles: ...hrRoles, 'accountant'
+   query: month, year
+   returns: .json({ success: true, message: 'Payroll dashboard fetched.', data: { month: queryMonth, year: queryYear, ...stats }, }); }); // ═══════════════════════════════════════════ // LEAVE TYPE // ═══════════════════════════════════════════
+
+POST /api/hrm/payroll/process   roles: ...hrRoles, 'accountant'
+   body: month, year, academicYear
+   returns: .json({ success: true, message: `Payroll processed for ${month}/${year}. ${results.processed} payroll records created.`, data: { batchId, results }, }); });
+
+GET /api/hrm/payroll   roles: ...hrRoles, 'accountant'
+   query: month, year, staffType, status, page = 1, limit = 50
+   returns: .json({ success: true, message: `Payroll for ${month}/${year} fetched.`, data: { payrolls, summary }, pagination: { total, page: parseInt(page), limit: parseInt(limit), totalPages: Math.ceil(total / parseInt(limit)), }, }); });
+   (paginated)
+
+GET /api/hrm/payroll/:id   roles: ...hrRoles, 'accountant'
+   returns: .json({ success: true, message: 'Payroll record fetched.', data: { payroll }, }); });
+
+POST /api/hrm/payroll/:id/approve   roles: ...adminRoles, 'accountant'
+   body: remarks
+   returns: .json({ success: true, message: 'Payroll approved.', data: { payroll }, }); });
+
+POST /api/hrm/payroll/batch/approve   roles: ...adminRoles, 'accountant'
+   body: batchId, remarks
+   returns: .json({ success: true, message: `${result.modifiedCount} payroll records approved.`, data: { approved: result.modifiedCount, batchId }, }); });
+
+POST /api/hrm/payroll/:id/mark-paid   roles: ...hrRoles, 'accountant'
+   body: paymentDate, paymentMethod, paymentReference
+   returns: .json({ success: true, message: 'Payroll marked as paid.', data: { payroll }, }); });
+
+POST /api/hrm/payroll/batch/mark-paid   roles: ...hrRoles, 'accountant'
+   body: batchId, paymentDate, paymentMethod, paymentReference
+   returns: .json({ success: true, message: `${result.modifiedCount} payroll records marked as paid.`, data: { paid: result.modifiedCount, batchId }, }); });
+
+GET /api/hrm/leave-types
+   query: staffType, gender
+   returns: .json({ success: true, message: 'Leave types fetched.', data: { leaveTypes }, }); });
+
+POST /api/hrm/leave-types   roles: ...adminRoles
+   body: code
+   returns: .json({ success: true, message: 'Leave type created.', data: { leaveType }, }); });
+
+PATCH /api/hrm/leave-types/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Leave type updated.', data: { leaveType }, }); });
+
+DELETE /api/hrm/leave-types/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Leave type deactivated.', }); }); // ═══════════════════════════════════════════ // LEAVE APPLICATION // ═══════════════════════════════════════════
+
+GET /api/hrm/leaves   roles: ...hrRoles, 'teacher'
+   query: staffType, status, leaveType, startDate, endDate, search, page = 1, limit = 20,
+   returns: .json({ success: true, message: 'Leave applications fetched.', data: { applications }, pagination: { total, page: parseInt(page), limit: parseInt(limit), totalPages: Math.ceil(total / parseInt(limit)), }, }); });
+   (paginated)
+
+POST /api/hrm/leaves   roles: ...hrRoles, 'teacher'
+   body: staffType, teacher, employee, leaveType, startDate, endDate, numberOfDays, isHalfDay, halfDayType, reason, contactDuringLeave, contactAddress, handoverTo, handoverToName, handoverNotes, academicYear, term, notes,
+   returns: .json({ success: true, message: 'Leave application submitted.', data: { application }, }); });
+
+GET /api/hrm/leaves/on-leave-now   roles: ...hrRoles
+   returns: .json({ success: true, message: 'Currently on leave staff fetched.', data: { onLeave }, }); });
+
+GET /api/hrm/leaves/:id
+   returns: .json({ success: true, message: 'Leave application fetched.', data: { application }, }); });
+
+POST /api/hrm/leaves/:id/approve   roles: ...hrRoles
+   body: remarks, approvalLevel = 'first'
+   returns: .json({ success: true, message: `Leave application ${approvalLevel === 'second' ? 'fully' : 'first-level'} approved.`, data: { application }, }); });
+
+POST /api/hrm/leaves/:id/reject   roles: ...hrRoles
+   body: reason
+   returns: .json({ success: true, message: 'Leave application rejected.', data: { application }, }); });
+
+POST /api/hrm/leaves/:id/cancel
+   body: reason
+   returns: .json({ success: true, message: 'Leave application cancelled.', data: { application }, }); });
+
+GET /api/hrm/leave-balances/:staffType/:staffId   roles: ...hrRoles, 'teacher'
+   query: academicYear
+   returns: .json({ success: true, message: 'Leave balances fetched.', data: { balances }, }); });
+
+POST /api/hrm/leave-balances/initialize   roles: ...adminRoles
+   body: academicYear, previousAcademicYear
+   returns: .json({ success: true, message: `Leave balances initialized. Created: ${results.created}`, data: results, }); });
