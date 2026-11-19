@@ -32,11 +32,26 @@ const ClassesPage = lazy(() => import('./pages/academic/ClassesPage'));
 const SectionsPage = lazy(() => import('./pages/academic/SectionsPage'));
 const TimetablePage = lazy(() => import('./pages/academic/TimetablePage'));
 
+const HRMDashboardPage = lazy(() => import('./pages/hrm/HRMDashboardPage'));
+const DepartmentsPage = lazy(() => import('./pages/hrm/DepartmentsPage'));
+const PayrollPage = lazy(() => import('./pages/hrm/PayrollPage'));
+const LeavesPage = lazy(() => import('./pages/hrm/LeavesPage'));
+
+const AttendancePage = lazy(() => import('./pages/attendance/AttendancePage'));
+const AttendanceReportPage = lazy(() => import('./pages/attendance/AttendanceReportPage'));
+
+const ExamsPage = lazy(() => import('./pages/exams/ExamsPage'));
+const AddExamPage = lazy(() => import('./pages/exams/AddExamPage'));
+const ExamDetailPage = lazy(() => import('./pages/exams/ExamDetailPage'));
+const EnterResultsPage = lazy(() => import('./pages/exams/EnterResultsPage'));
+const ReportCardsPage = lazy(() => import('./pages/exams/ReportCardsPage'));
+
 const ADMIN = ['super_admin', 'admin'];
 const STUDENT_VIEW = [...ADMIN, 'teacher', 'receptionist', 'accountant', 'librarian'];
 const STUDENT_EDIT = [...ADMIN, 'receptionist'];
 const HR = [...ADMIN, 'hr_manager'];
 const STAFF = [...ADMIN, 'teacher', 'receptionist'];
+const TEACHER = [...ADMIN, 'teacher'];
 
 const guard = (roles, element) => <ProtectedRoute roles={roles}>{element}</ProtectedRoute>;
 
@@ -84,6 +99,20 @@ const App = () => (
         <Route path="/academic/sections" element={guard(STAFF, <SectionsPage />)} />
         <Route path="/academic/subjects" element={<SubjectsPage />} />
         <Route path="/academic/timetable" element={<TimetablePage />} />
+
+        <Route path="/hrm" element={guard(HR, <HRMDashboardPage />)} />
+        <Route path="/hrm/departments" element={guard(HR, <DepartmentsPage />)} />
+        <Route path="/hrm/payroll" element={guard(HR, <PayrollPage />)} />
+        <Route path="/hrm/leaves" element={guard(HR, <LeavesPage />)} />
+
+        <Route path="/attendance" element={guard(STAFF, <AttendancePage />)} />
+        <Route path="/attendance/report" element={guard(STAFF, <AttendanceReportPage />)} />
+
+        <Route path="/exams" element={guard(TEACHER, <ExamsPage />)} />
+        <Route path="/exams/new" element={guard(TEACHER, <AddExamPage />)} />
+        <Route path="/exams/:id" element={guard(TEACHER, <ExamDetailPage />)} />
+        <Route path="/exams/:id/results" element={guard(TEACHER, <EnterResultsPage />)} />
+        <Route path="/report-cards" element={guard(TEACHER, <ReportCardsPage />)} />
       </Route>
 
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
