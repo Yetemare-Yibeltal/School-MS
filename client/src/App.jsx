@@ -30,9 +30,7 @@ const AcademicYearsPage = lazy(() => import('./pages/academic/AcademicYearsPage'
 const SubjectsPage = lazy(() => import('./pages/academic/SubjectsPage'));
 const ClassesPage = lazy(() => import('./pages/academic/ClassesPage'));
 const SectionsPage = lazy(() => import('./pages/academic/SectionsPage'));
-const TimetablePage = lazy(() => import('./pages/academic/TimetablePage'));
-
-const HRMDashboardPage = lazy(() => import('./pages/hrm/HRMDashboardPage'));
+const TimetablePage = lazy(() => import('./pages/academic/TimetablePage')
 const DepartmentsPage = lazy(() => import('./pages/hrm/DepartmentsPage'));
 const PayrollPage = lazy(() => import('./pages/hrm/PayrollPage'));
 const LeavesPage = lazy(() => import('./pages/hrm/LeavesPage'));
