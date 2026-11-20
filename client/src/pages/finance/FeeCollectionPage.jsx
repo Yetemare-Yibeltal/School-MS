@@ -1,299 +1,193 @@
-// ============================================
-// KAT SCHOOL MANAGEMENT SYSTEM
-// FEE COLLECTION PAGE
-// kat-school/client/src/pages/finance/FeeCollectionPage.jsx
-// ============================================
-
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import React, { useState } from 'react';
-import toast from 'react-hot-toast';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import api from '../../services/api';
+import Modal from '../../components/common/Modal';
 
 const GRADES = ['Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
-const PAYMENT_METHODS = ['Cash', 'Bank Transfer', 'Telebirr', 'CBE Birr', 'Cheque', 'Other'];
-
-const PaymentModal = ({ assignment, student, onClose, onSuccess }) => {
-  const [form, setForm] = useState({
-    amount: String(assignment.remainingAmount || ''),
-    method: 'Cash',
-    transactionReference: '',
-    payerName: student ? `${student.firstName} ${student.fatherName}` : '',
-    payerPhone: '',
-    sendEmailReceipt: false,
-    notes: '',
-  });
-  const [errors, setErrors] = useState({});
-
-  const collectMutation = useMutation({
-    mutationFn: (data) => api.post('/finance/payments', data),
-    onSuccess: (res) => {
-      toast.success(
-        `Payment of ETB ${form.amount} collected! Receipt: ${res.data.data.payment.receiptNumber}`
-      );
-      onSuccess();
-    },
-    onError: (err) => toast.error(err.response?.data?.message || 'Payment failed.'),
-  });
-
-  const validate = () => {
-    const newErrors = {};
-    if (!form.amount || parseFloat(form.amount) <= 0) {
-      newErrors.amount = 'Valid amount is required.';
-    }
-    if (parseFloat(form.amount) > assignment.remainingAmount) {
-      newErrors.amount = `Cannot exceed remaining balance (ETB ${assignment.remainingAmount}).`;
-    }
-    if (!form.method) {
-      newErrors.method = 'Payment method is required.';
-    }
-    if (!form.payerName.trim()) {
-      newErrors.payerName = 'Payer name is required.';
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validate()) {
-      return;
-    }
-
-    collectMutation.mutate({
-      feeAssignment: assignment._id,
-      student: assignment.student?._id || assignment.student,
-      amount: parseFloat(form.amount),
-      method: form.method,
-      paymentDate: new Date().toISOString().split('T')[0],
-      transactionReference: form.transactionReference || undefined,
-      paidBy: {
-        name: form.payerName.trim(),
-        relationship: 'Parent/Guardian',
-        phone: form.payerPhone || undefined,
-      },
-      notes: form.notes || undefined,
-      generateReceipt: true,
-      sendEmailReceipt: form.sendEmailReceipt,
-    });
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg animate-slide-up">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <div>
-            <h3 className="text-base font-bold">Collect Payment</h3>
-            <p className="text-xs text-slate-500">
-              {assignment.feeTypeName} — {assignment.studentName}
-            </p>
-          </div>
-          <button onClick={onClose} className="btn-icon btn-ghost">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Fee Summary */}
-          <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-200">
-            <div className="grid grid-cols-3 gap-3 text-center text-sm">
-              <div>
-                <p className="text-xs text-slate-500">Total Fee</p>
-                <p className="font-bold text-slate-900">
-                  ETB {Number(assignment.netAmount).toLocaleString()}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">Paid</p>
-                <p className="font-bold text-green-700">
-                  ETB {Number(assignment.paidAmount).toLocaleString()}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">Balance</p>
-                <p className="font-bold text-red-600">
-                  ETB {Number(assignment.remainingAmount).toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="form-group mb-0">
-              <label className="form-label">
-                Amount (ETB) <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                value={form.amount}
-                onChange={(e) => {
-                  setForm((p) => ({ ...p, amount: e.target.value }));
-                  if (errors.amount) {
-                    setErrors((p) => ({ ...p, amount: null }));
-                  }
-                }}
-                min="1"
-                max={assignment.remainingAmount}
-                step="0.01"
-                placeholder="Amount to collect"
-                className={errors.amount ? 'form-input-error' : 'form-input'}
-                autoFocus
-              />
-              {errors.amount && <p className="form-error">{errors.amount}</p>}
-            </div>
-            <div className="form-group mb-0">
-              <label className="form-label">
-                Payment Method <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={form.method}
-                onChange={(e) => setForm((p) => ({ ...p, method: e.target.value }))}
-                className="form-select"
-              >
-                {PAYMENT_METHODS.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {form.method !== 'Cash' && (
-            <div className="form-group mb-0">
-              <label className="form-label">Transaction Reference</label>
-              <input
-                type="text"
-                value={form.transactionReference}
-                onChange={(e) => setForm((p) => ({ ...p, transactionReference: e.target.value }))}
-                placeholder="Transaction ID / Cheque number"
-                className="form-input"
-              />
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="form-group mb-0">
-              <label className="form-label">
-                Paid By (Name) <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={form.payerName}
-                onChange={(e) => {
-                  setForm((p) => ({ ...p, payerName: e.target.value }));
-                  if (errors.payerName) {
-                    setErrors((p) => ({ ...p, payerName: null }));
-                  }
-                }}
-                className={errors.payerName ? 'form-input-error' : 'form-input'}
-              />
-              {errors.payerName && <p className="form-error">{errors.payerName}</p>}
-            </div>
-            <div className="form-group mb-0">
-              <label className="form-label">Payer Phone</label>
-              <input
-                type="tel"
-                value={form.payerPhone}
-                onChange={(e) => setForm((p) => ({ ...p, payerPhone: e.target.value }))}
-                placeholder="+251..."
-                className="form-input"
-              />
-            </div>
-          </div>
-
-          <div className="form-group mb-0">
-            <label className="form-label">Notes</label>
-            <textarea
-              value={form.notes}
-              onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
-              className="form-textarea"
-              rows={2}
-              placeholder="Optional notes..."
-            />
-          </div>
-
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={form.sendEmailReceipt}
-              onChange={(e) => setForm((p) => ({ ...p, sendEmailReceipt: e.target.checked }))}
-              className="form-checkbox"
-            />
-            <span className="text-sm text-slate-600">Send email receipt to parent</span>
-          </label>
-
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn-outline flex-1">
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={collectMutation.isPending}
-              className="btn-primary flex-1"
-            >
-              {collectMutation.isPending ? (
-                <>
-                  <div className="spinner-sm" /> Processing...
-                </>
-              ) : (
-                `💳 Collect ETB ${parseFloat(form.amount || 0).toLocaleString()}`
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
+const METHODS = ['Cash', 'Bank Transfer', 'Telebirr', 'CBE Birr', 'Cheque', 'Other'];
+const STATUSES = ['unpaid', 'partial', 'paid', 'overdue', 'cancelled'];
+const money = (n) => `ETB ${Number(n || 0).toLocaleString()}`;
+const fmt = (d) => (d ? new Date(d).toLocaleDateString('en-GB') : '-');
+const today = () => new Date().toISOString().split('T')[0];
+const idOf = (v) => (v && typeof v === 'object' ? v._id : v);
+const studentName = (a) =>
+  a.studentName ||
+  (a.student && typeof a.student === 'object'
+    ? `${a.student.firstName || ''} ${a.student.fatherName || ''}`.trim()
+    : '-');
+const feeName = (a) =>
+  a.feeTypeName || (a.feeType && typeof a.feeType === 'object' ? a.feeType.name : '-');
+const net = (a) => a.netAmount ?? a.amount ?? 0;
+const paid = (a) => a.paidAmount ?? 0;
+const remaining = (a) => a.remainingAmount ?? Math.max(net(a) - paid(a), 0);
 
 const FeeCollectionPage = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const queryClient = useQueryClient();
-  const [paymentModal, setPaymentModal] = useState({ open: false, assignment: null });
+  const qc = useQueryClient();
+  const [params, setParams] = useSearchParams();
+  const page = parseInt(params.get('page') || '1', 10);
+  const search = params.get('search') || '';
+  const grade = params.get('grade') || '';
+  const status = params.get('status') || '';
 
-  const page = parseInt(searchParams.get('page') || '1');
-  const search = searchParams.get('search') || '';
-  const grade = searchParams.get('grade') || '';
-  const status = searchParams.get('status') || '';
+  const [payModal, setPayModal] = useState(null);
+  const [receipt, setReceipt] = useState(null);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [pay, setPay] = useState({
+    amount: '',
+    method: 'Cash',
+    transactionReference: '',
+    payerName: '',
+    payerPhone: '',
+    notes: '',
+  });
+  const [asg, setAsg] = useState({
+    grade: '',
+    section: '',
+    feeType: '',
+    term: '',
+    amount: '',
+    dueDate: '',
+    notes: '',
+  });
 
-  const updateParam = (key, value) => {
-    const next = new URLSearchParams(searchParams);
-    value ? next.set(key, value) : next.delete(key);
-    if (key !== 'page') {
-      next.set('page', '1');
-    }
-    setSearchParams(next);
+  const setParam = (k, v) => {
+    const next = new URLSearchParams(params);
+    if (v) next.set(k, v);
+    else next.delete(k);
+    if (k !== 'page') next.set('page', '1');
+    setParams(next);
   };
 
   const { data, isLoading } = useQuery({
-    queryKey: ['fee-assignments', { page, search, grade, status }],
+    queryKey: ['fee-assignments', page, search, grade, status],
     queryFn: async () => {
-      const params = new URLSearchParams({
-        page,
-        limit: 20,
-        ...(search && { search }),
-        ...(grade && { grade }),
-        ...(status && { status }),
-      });
-      const res = await api.get(`/finance/assignments?${params}`);
-      return res.data;
+      const q = new URLSearchParams({ page, limit: 20 });
+      if (search) q.set('search', search);
+      if (grade) q.set('grade', grade);
+      if (status) q.set('status', status);
+      return (await api.get(`/finance/assignments?${q}`)).data;
     },
     keepPreviousData: true,
   });
+  const { data: years = [] } = useQuery({
+    queryKey: ['academic-years'],
+    queryFn: async () => (await api.get('/academic/years')).data.data.academicYears,
+  });
+  const year = years.find((y) => y.isCurrent)?._id;
+  const { data: terms = [] } = useQuery({
+    queryKey: ['terms', year],
+    queryFn: async () => (await api.get(`/academic/terms?academicYear=${year}`)).data.data.terms,
+    enabled: !!year && assignOpen,
+  });
+  const { data: feeTypes = [] } = useQuery({
+    queryKey: ['fee-types', ''],
+    queryFn: async () => (await api.get('/finance/fee-types')).data.data.feeTypes,
+    enabled: assignOpen,
+  });
+  const { data: sections = [] } = useQuery({
+    queryKey: ['sections', asg.grade],
+    queryFn: async () =>
+      (await api.get(`/academic/sections?grade=${asg.grade}`)).data.data.sections,
+    enabled: !!asg.grade && assignOpen,
+  });
 
   const assignments = data?.data?.assignments || [];
-  const pagination = data?.pagination || {};
-  const summary = data?.data?.summary || {};
+  const pg = data?.pagination || {};
+
+  const fail = (err) => toast.error(err.response?.data?.message || 'Request failed.');
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey: ['fee-assignments'] });
+    qc.invalidateQueries({ queryKey: ['finance-dashboard'] });
+  };
+
+  const collect = useMutation({
+    mutationFn: (payload) => api.post('/finance/payments', payload),
+    onSuccess: (res) => {
+      toast.success(res.data.message);
+      setReceipt({ payment: res.data.data.payment, receipt: res.data.data.receipt });
+      setPayModal(null);
+      refresh();
+    },
+    onError: fail,
+  });
+  const assign = useMutation({
+    mutationFn: (payload) => api.post('/finance/assignments/bulk', payload),
+    onSuccess: (res) => {
+      toast.success(res.data.message);
+      setAssignOpen(false);
+      refresh();
+    },
+    onError: fail,
+  });
+
+  const openPay = (a) => {
+    setPay({
+      amount: String(remaining(a)),
+      method: 'Cash',
+      transactionReference: '',
+      payerName: '',
+      payerPhone: '',
+      notes: '',
+    });
+    setPayModal(a);
+  };
+
+  const submitPay = (e) => {
+    e.preventDefault();
+    const amount = parseFloat(pay.amount);
+    if (!amount || amount <= 0) {
+      toast.error('Enter a valid amount.');
+      return;
+    }
+    if (amount > remaining(payModal)) {
+      toast.error(`Amount cannot exceed the balance (${money(remaining(payModal))}).`);
+      return;
+    }
+    if (!pay.payerName.trim()) {
+      toast.error('Payer name is required.');
+      return;
+    }
+    collect.mutate({
+      feeAssignment: payModal._id,
+      student: idOf(payModal.student),
+      amount,
+      method: pay.method,
+      paymentDate: today(),
+      transactionReference: pay.transactionReference || undefined,
+      paidBy: {
+        name: pay.payerName.trim(),
+        phone: pay.payerPhone || undefined,
+        relationship: 'Parent/Guardian',
+      },
+      notes: pay.notes || undefined,
+      generateReceipt: true,
+    });
+  };
+
+  const submitAssign = (e) => {
+    e.preventDefault();
+    if (!asg.grade || !asg.feeType || !asg.amount || !asg.dueDate) {
+      toast.error('Grade, fee type, amount and due date are required.');
+      return;
+    }
+    assign.mutate({
+      grade: asg.grade,
+      section: asg.section || undefined,
+      feeType: asg.feeType,
+      academicYear: year,
+      term: asg.term || undefined,
+      amount: parseFloat(asg.amount),
+      dueDate: asg.dueDate,
+      notes: asg.notes || undefined,
+    });
+  };
+
+  const pickFee = (id) => {
+    const t = feeTypes.find((x) => x._id === id);
+    setAsg((p) => ({ ...p, feeType: id, amount: t ? String(t.amount) : p.amount }));
+  };
 
   return (
     <div className="space-y-5">
@@ -301,246 +195,358 @@ const FeeCollectionPage = () => {
         <div>
           <h1 className="page-title">Fee Collection</h1>
           <p className="page-subtitle">
-            {pagination.total ? `${pagination.total} fee assignments` : 'Collect student fees'}
+            {pg.total ? `${pg.total} fee assignments` : 'Assign and collect student fees'}
           </p>
         </div>
+        <button type="button" className="btn-primary" onClick={() => setAssignOpen(true)}>
+          Assign fee to class
+        </button>
       </div>
 
-      {/* Filters */}
-      <div className="card p-4">
-        <div className="flex flex-wrap gap-3">
-          <div className="relative flex-1 min-w-[200px]">
-            <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => updateParam('search', e.target.value)}
-              placeholder="Search by student name, ID, fee type..."
-              className="form-input pl-9"
-            />
-          </div>
-          <select
-            value={grade}
-            onChange={(e) => updateParam('grade', e.target.value)}
-            className="form-select w-32"
-          >
-            <option value="">All Grades</option>
-            {GRADES.map((g) => (
-              <option key={g} value={g}>
-                {g}
-              </option>
-            ))}
-          </select>
-          <select
-            value={status}
-            onChange={(e) => updateParam('status', e.target.value)}
-            className="form-select w-32"
-          >
-            <option value="">All Status</option>
-            {['paid', 'partial', 'unpaid', 'overdue'].map((s) => (
-              <option key={s} value={s} className="capitalize">
-                {s}
-              </option>
-            ))}
-          </select>
-          {(search || grade || status) && (
-            <button onClick={() => setSearchParams({ page: '1' })} className="btn-ghost text-sm">
-              Clear
-            </button>
-          )}
-        </div>
+      <div className="card p-4 flex flex-wrap gap-3">
+        <input
+          type="search"
+          className="form-input flex-1 min-w-[200px]"
+          placeholder="Search student or fee..."
+          value={search}
+          onChange={(e) => setParam('search', e.target.value)}
+        />
+        <select
+          className="form-select w-36"
+          value={grade}
+          onChange={(e) => setParam('grade', e.target.value)}
+        >
+          <option value="">All grades</option>
+          {GRADES.map((g) => (
+            <option key={g}>{g}</option>
+          ))}
+        </select>
+        <select
+          className="form-select w-36"
+          value={status}
+          onChange={(e) => setParam('status', e.target.value)}
+        >
+          <option value="">All status</option>
+          {STATUSES.map((s) => (
+            <option key={s}>{s}</option>
+          ))}
+        </select>
       </div>
 
-      {/* Assignments Table */}
       <div className="card overflow-hidden">
         <div className="table-container rounded-none border-0">
           <table className="table">
             <thead>
               <tr>
                 <th>Student</th>
-                <th>Grade</th>
-                <th>Fee Type</th>
-                <th>Total Fee</th>
+                <th>Fee</th>
+                <th>Net</th>
                 <th>Paid</th>
                 <th>Balance</th>
-                <th>Due Date</th>
+                <th>Due</th>
                 <th>Status</th>
                 <th className="text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {isLoading ? (
-                Array.from({ length: 6 }).map((_, i) => (
-                  <tr key={i}>
-                    {Array.from({ length: 9 }).map((_, j) => (
-                      <td key={j}>
-                        <div className="h-4 bg-slate-100 rounded animate-pulse" />
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              ) : assignments.length === 0 ? (
+              {isLoading && (
                 <tr>
-                  <td colSpan={9} className="py-16 text-center">
-                    <div className="text-4xl mb-3">💳</div>
-                    <p className="text-slate-500">No fee assignments found</p>
+                  <td colSpan={8} className="py-10 text-center text-slate-400">
+                    Loading...
                   </td>
                 </tr>
-              ) : (
-                assignments.map((assignment) => {
-                  const isOverdue =
-                    assignment.dueDate &&
-                    new Date(assignment.dueDate) < new Date() &&
-                    assignment.status !== 'paid';
-                  return (
-                    <tr
-                      key={assignment._id}
-                      className={`hover:bg-slate-50 ${isOverdue ? 'bg-red-50/20' : ''}`}
-                    >
-                      <td>
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-indigo-100 flex-shrink-0 overflow-hidden flex items-center justify-center text-indigo-700 font-semibold text-xs">
-                            {assignment.student?.photo?.url ? (
-                              <img
-                                src={assignment.student.photo.url}
-                                alt=""
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              assignment.studentName?.[0]
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-slate-900">
-                              {assignment.studentName}
-                            </p>
-                            <p className="text-xs text-slate-400">{assignment.studentId}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="badge badge-primary text-xs">{assignment.grade}</span>
-                      </td>
-                      <td className="text-sm text-slate-700">{assignment.feeTypeName}</td>
-                      <td className="text-sm font-medium">
-                        ETB {Number(assignment.netAmount).toLocaleString()}
-                      </td>
-                      <td className="text-sm text-green-700 font-medium">
-                        ETB {Number(assignment.paidAmount).toLocaleString()}
-                      </td>
-                      <td>
-                        <span
-                          className={`text-sm font-bold ${
-                            assignment.remainingAmount > 0 ? 'text-red-600' : 'text-green-600'
-                          }`}
-                        >
-                          ETB {Number(assignment.remainingAmount).toLocaleString()}
-                        </span>
-                      </td>
-                      <td>
-                        {assignment.dueDate && (
-                          <span
-                            className={`text-xs ${
-                              isOverdue ? 'text-red-600 font-semibold' : 'text-slate-500'
-                            }`}
-                          >
-                            {new Date(assignment.dueDate).toLocaleDateString('en-ET', {
-                              day: 'numeric',
-                              month: 'short',
-                            })}
-                            {isOverdue && ' ⚠️'}
-                          </span>
-                        )}
-                      </td>
-                      <td>
-                        <span
-                          className={`badge text-xs capitalize ${
-                            assignment.status === 'paid'
-                              ? 'badge-success'
-                              : assignment.status === 'partial'
-                                ? 'badge-warning'
-                                : assignment.status === 'overdue'
-                                  ? 'badge-danger'
-                                  : 'badge-gray'
-                          }`}
-                        >
-                          {assignment.status}
-                        </span>
-                      </td>
-                      <td className="text-right">
-                        {assignment.status !== 'paid' && assignment.status !== 'cancelled' && (
-                          <button
-                            onClick={() => setPaymentModal({ open: true, assignment })}
-                            className="btn-primary btn-sm"
-                          >
-                            💳 Collect
-                          </button>
-                        )}
-                        {assignment.status === 'paid' && (
-                          <span className="text-xs text-green-600 font-semibold">✓ Paid</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })
               )}
+              {!isLoading && assignments.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-slate-500">
+                    No fee assignments yet. Use "Assign fee to class" first.
+                  </td>
+                </tr>
+              )}
+              {assignments.map((a) => {
+                const late = a.dueDate && new Date(a.dueDate) < new Date() && a.status !== 'paid';
+                return (
+                  <tr key={a._id} className={late ? 'bg-red-50/30' : ''}>
+                    <td>{studentName(a)}</td>
+                    <td>{feeName(a)}</td>
+                    <td>{money(net(a))}</td>
+                    <td className="text-green-700">{money(paid(a))}</td>
+                    <td
+                      className={remaining(a) > 0 ? 'text-red-600 font-semibold' : 'text-green-600'}
+                    >
+                      {money(remaining(a))}
+                    </td>
+                    <td className={late ? 'text-red-600' : ''}>{fmt(a.dueDate)}</td>
+                    <td>
+                      <span
+                        className={`badge capitalize ${
+                          a.status === 'paid'
+                            ? 'badge-success'
+                            : a.status === 'partial'
+                            ? 'badge-warning'
+                            : a.status === 'overdue'
+                            ? 'badge-danger'
+                            : 'badge-gray'
+                        }`}
+                      >
+                        {a.status}
+                      </span>
+                    </td>
+                    <td className="text-right">
+                      {a.status !== 'paid' && a.status !== 'cancelled' ? (
+                        <button
+                          type="button"
+                          className="btn-primary btn-sm"
+                          onClick={() => openPay(a)}
+                        >
+                          Collect
+                        </button>
+                      ) : (
+                        <span className="text-xs text-slate-400">-</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
-
-        {pagination.totalPages > 1 && (
-          <div className="px-5 py-4 border-t border-slate-100 flex items-center justify-between">
+        {pg.totalPages > 1 && (
+          <div className="px-5 py-4 border-t flex items-center justify-between">
             <p className="text-sm text-slate-500">
-              Showing {pagination.from}–{pagination.to} of {pagination.total}
+              Page {page} of {pg.totalPages} ({pg.total} records)
             </p>
-            <div className="flex gap-1">
+            <div className="flex gap-2">
               <button
-                onClick={() => updateParam('page', String(page - 1))}
-                disabled={!pagination.hasPreviousPage}
-                className="btn-outline btn-sm disabled:opacity-40"
+                type="button"
+                className="btn-outline btn-sm"
+                disabled={!pg.hasPreviousPage}
+                onClick={() => setParam('page', String(page - 1))}
               >
-                ← Prev
+                Prev
               </button>
-              <span className="text-sm px-2 py-1 text-slate-600">
-                Page {page} of {pagination.totalPages}
-              </span>
               <button
-                onClick={() => updateParam('page', String(page + 1))}
-                disabled={!pagination.hasNextPage}
-                className="btn-outline btn-sm disabled:opacity-40"
+                type="button"
+                className="btn-outline btn-sm"
+                disabled={!pg.hasNextPage}
+                onClick={() => setParam('page', String(page + 1))}
               >
-                Next →
+                Next
               </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Payment Modal */}
-      {paymentModal.open && paymentModal.assignment && (
-        <PaymentModal
-          assignment={paymentModal.assignment}
-          student={paymentModal.assignment.student}
-          onClose={() => setPaymentModal({ open: false, assignment: null })}
-          onSuccess={() => {
-            setPaymentModal({ open: false, assignment: null });
-            queryClient.invalidateQueries({ queryKey: ['fee-assignments'] });
-            queryClient.invalidateQueries({ queryKey: ['finance-dashboard'] });
-          }}
-        />
-      )}
+      <Modal open={!!payModal} title="Collect payment" onClose={() => setPayModal(null)}>
+        {payModal && (
+          <form onSubmit={submitPay}>
+            <div className="p-3 bg-indigo-50 rounded-xl mb-4 text-sm grid grid-cols-3 text-center">
+              <div>
+                <p className="text-xs text-slate-500">Total</p>
+                <b>{money(net(payModal))}</b>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">Paid</p>
+                <b className="text-green-700">{money(paid(payModal))}</b>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">Balance</p>
+                <b className="text-red-600">{money(remaining(payModal))}</b>
+              </div>
+            </div>
+            <p className="text-sm text-slate-600 mb-3">
+              {studentName(payModal)} · {feeName(payModal)}
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="form-group">
+                <label className="form-label">Amount (ETB)</label>
+                <input
+                  type="number"
+                  min="1"
+                  step="0.01"
+                  className="form-input"
+                  value={pay.amount}
+                  onChange={(e) => setPay((p) => ({ ...p, amount: e.target.value }))}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Method</label>
+                <select
+                  className="form-select"
+                  value={pay.method}
+                  onChange={(e) => setPay((p) => ({ ...p, method: e.target.value }))}
+                >
+                  {METHODS.map((m) => (
+                    <option key={m}>{m}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            {pay.method !== 'Cash' && (
+              <div className="form-group">
+                <label className="form-label">Transaction reference</label>
+                <input
+                  className="form-input"
+                  value={pay.transactionReference}
+                  onChange={(e) => setPay((p) => ({ ...p, transactionReference: e.target.value }))}
+                />
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="form-group">
+                <label className="form-label">Paid by</label>
+                <input
+                  className="form-input"
+                  value={pay.payerName}
+                  onChange={(e) => setPay((p) => ({ ...p, payerName: e.target.value }))}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Payer phone</label>
+                <input
+                  className="form-input"
+                  value={pay.payerPhone}
+                  onChange={(e) => setPay((p) => ({ ...p, payerPhone: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Notes</label>
+              <textarea
+                className="form-textarea"
+                value={pay.notes}
+                onChange={(e) => setPay((p) => ({ ...p, notes: e.target.value }))}
+              />
+            </div>
+            <button type="submit" disabled={collect.isPending} className="btn-primary w-full">
+              {collect.isPending ? 'Processing...' : `Collect ${money(pay.amount)}`}
+            </button>
+          </form>
+        )}
+      </Modal>
+
+      <Modal open={assignOpen} title="Assign fee to class" onClose={() => setAssignOpen(false)}>
+        <form onSubmit={submitAssign}>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="form-group">
+              <label className="form-label">Grade</label>
+              <select
+                className="form-select"
+                value={asg.grade}
+                onChange={(e) => setAsg((p) => ({ ...p, grade: e.target.value, section: '' }))}
+              >
+                <option value="">Select</option>
+                {GRADES.map((g) => (
+                  <option key={g}>{g}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Section (optional)</label>
+              <select
+                className="form-select"
+                value={asg.section}
+                disabled={!asg.grade}
+                onChange={(e) => setAsg((p) => ({ ...p, section: e.target.value }))}
+              >
+                <option value="">All sections</option>
+                {sections.map((s) => (
+                  <option key={s._id} value={s._id}>
+                    Section {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Fee type</label>
+            <select
+              className="form-select"
+              value={asg.feeType}
+              onChange={(e) => pickFee(e.target.value)}
+            >
+              <option value="">Select</option>
+              {feeTypes.map((t) => (
+                <option key={t._id} value={t._id}>
+                  {t.name} ({money(t.amount)})
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="form-group">
+              <label className="form-label">Amount per student</label>
+              <input
+                type="number"
+                min="0"
+                className="form-input"
+                value={asg.amount}
+                onChange={(e) => setAsg((p) => ({ ...p, amount: e.target.value }))}
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Due date</label>
+              <input
+                type="date"
+                className="form-input"
+                value={asg.dueDate}
+                onChange={(e) => setAsg((p) => ({ ...p, dueDate: e.target.value }))}
+              />
+            </div>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Term (optional)</label>
+            <select
+              className="form-select"
+              value={asg.term}
+              onChange={(e) => setAsg((p) => ({ ...p, term: e.target.value }))}
+            >
+              <option value="">None</option>
+              {terms.map((t) => (
+                <option key={t._id} value={t._id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button type="submit" disabled={assign.isPending} className="btn-primary w-full">
+            {assign.isPending ? 'Assigning...' : 'Assign to all students'}
+          </button>
+        </form>
+      </Modal>
+
+      <Modal open={!!receipt} title="Payment receipt" onClose={() => setReceipt(null)}>
+        {receipt && (
+          <div className="space-y-2 text-sm">
+            <div className="text-center mb-3">
+              <h4 className="font-bold">Kat Secondary School</h4>
+              <p className="text-xs text-slate-500">Addis Ababa, Ethiopia</p>
+            </div>
+            {[
+              ['Receipt no.', receipt.receipt?.receiptNumber || receipt.payment?.receiptNumber],
+              ['Amount', money(receipt.payment?.amount)],
+              ['Method', receipt.payment?.method],
+              ['Date', fmt(receipt.payment?.paymentDate)],
+            ].map(([k, v]) => (
+              <div
+                key={k}
+                className="flex justify-between border-b border-dashed border-slate-200 pb-1"
+              >
+                <span className="text-slate-500">{k}</span>
+                <b>{v || '-'}</b>
+              </div>
+            ))}
+            <button
+              type="button"
+              className="btn-outline w-full mt-3"
+              onClick={() => window.print()}
+            >
+              Print
+            </button>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };
