@@ -1,0 +1,61 @@
+
+##### /api/attendance   (attendance.routes.js)
+
+GET /api/attendance/dashboard   roles: ...teacherRoles, 'receptionist'
+   query: academicYear
+   returns: .json({ success: true, message: 'Attendance dashboard fetched.', data: { today: { present: todayStatsMap.present || 0, absent: todayStatsMap.absent || 0, late: todayStatsMap.late || 0, excused: todayStatsMap.excused || 0, total: Object.values(todayStatsMap).reduce((a, b) => a + b, 0), }, weeklyTrend, lowAttendanceStudents, absentToday,
+
+POST /api/attendance/mark   roles: ...teacherRoles
+   body: student, date, status, section, grade, academicYear, term, checkInTime, checkOutTime, lateMinutes, absenceType, isExcused, excuseReason, leaveApplication, remarks, notifyParent,
+   returns: .json({ success: true, message: `Attendance marked as ${status}.`, data: { attendance }, }); }); // ─── Bulk Mark Attendance ─────────────────────
+
+POST /api/attendance/bulk-mark   roles: ...teacherRoles
+   body: date, section, grade, academicYear, term, attendances, notifyParents
+   returns: .json({ success: true, message: `Attendance recorded. Marked: ${results.marked}, Updated: ${results.updated}`, data: results, }); }); // ─── Update Attendance ────────────────────────
+
+PATCH /api/attendance/:id   roles: ...teacherRoles
+   returns: .json({ success: true, message: 'Attendance updated.', data: { attendance }, }); }); // ─── Get Attendance by Date and Section ───────
+
+GET /api/attendance/by-date   roles: ...teacherRoles, 'receptionist'
+   query: date, section, grade, academicYear
+   returns: .json({ success: true, message: 'Attendance fetched.', data: { date, attendance, allStudents, attendanceMap, summary, }, }); }); // ─── Get Student Attendance Report ────────────
+
+GET /api/attendance/student/:studentId   roles: ...teacherRoles, 'parent', 'student'
+   query: startDate, endDate, academicYear, term
+   returns: .json({ success: true, message: 'Student attendance report fetched.', data: { attendance, stats }, }); }); // ─── Get Section Attendance Report ────────────
+
+GET /api/attendance/section/:section/report   roles: ...teacherRoles
+   query: startDate, endDate, academicYear, term
+   returns: .json({ success: true, message: 'Section attendance report fetched.', data: { attendanceSummary }, }); }); // ─── Get Attendance Dashboard Stats ───────────
+
+POST /api/attendance/staff/mark   roles: ...hrRoles, ...teacherRoles
+   body: teacher, employee, date, status, checkInTime, checkOutTime, lateMinutes, isExcused, leaveApplication, remarks,
+   returns: .json({ success: true, message: `Staff attendance marked as ${status}.`, data: { attendance }, }); });
+
+POST /api/attendance/staff/bulk-mark   roles: ...hrRoles
+   body: date, attendances
+   returns: .json({ success: true, message: `Staff attendance recorded. Marked: ${results.marked}, Updated: ${results.updated}`, data: results, }); });
+
+GET /api/attendance/staff/report   roles: ...hrRoles
+   query: staffType, staffId, month, year
+   returns: .json({ success: true, message: 'Staff attendance report fetched.', data: { month: queryMonth, year: queryYear, attendance, statsByStaff: Object.values(statsByStaff), }, }); }); // ═══════════════════════════════════════════ // HOLIDAYS // ═══════════════════════════════════════════
+
+GET /api/attendance/holidays
+   query: academicYear, type
+   returns: .json({ success: true, message: 'Holidays fetched.', data: { holidays }, }); });
+
+POST /api/attendance/holidays   roles: ...adminRoles
+   body: name, startDate, endDate, type, academicYear, description, affectsAttendance
+   returns: .json({ success: true, message: 'Holiday created.', data: { holiday }, }); });
+
+PATCH /api/attendance/holidays/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Holiday updated.', data: { holiday }, }); });
+
+DELETE /api/attendance/holidays/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Holiday deleted.', }); }); // ═══════════════════════════════════════════ // ATTENDANCE SETTINGS // ═══════════════════════════════════════════
+
+GET /api/attendance/settings
+   returns: .json({ success: true, message: 'Attendance settings fetched.', data: { settings }, }); });
+
+PATCH /api/attendance/settings   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Attendance settings updated.', data: { settings }, }); });

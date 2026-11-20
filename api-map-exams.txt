@@ -1,0 +1,60 @@
+
+##### /api/exams   (exam.routes.js)
+
+GET /api/exams/dashboard   roles: ...teacherRoles, 'receptionist'
+   returns: .json({ success: true, message: 'Exam dashboard fetched.', data: { currentAcademicYear: currentYear, currentTerm, totalExams, scheduled, completed, ongoing, recentResults, examsByGrade, }, }); });
+
+GET /api/exams/types
+   returns: .json({ success: true, message: 'Exam types fetched.', data: { examTypes }, }); });
+
+POST /api/exams/types   roles: ...adminRoles
+   body: name, code, description, totalMarks, isCA, isTerminal, isMandatory, sortOrder
+   returns: .json({ success: true, message: 'Exam type created.', data: { examType }, }); });
+
+PATCH /api/exams/types/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Exam type updated.', data: { examType }, }); });
+
+DELETE /api/exams/types/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Exam type deactivated.', }); }); // ═══════════════════════════════════════════ // EXAM // ═══════════════════════════════════════════
+
+GET /api/exams   roles: ...teacherRoles, 'student', 'parent'
+   query: academicYear, term, grade, section, subject, examType, status, search, page = 1, limit = 20,
+   returns: .json({ success: true, message: 'Exams fetched.', data: { exams }, pagination: { total, page: parseInt(page), totalPages: Math.ceil(total / parseInt(limit)), }, }); });
+   (paginated)
+
+POST /api/exams   roles: ...teacherRoles
+   body: title, examType, academicYear, term, grade, section, subject, startDate, endDate, startTime, endTime, duration, room, invigilator, totalMarks, passingMarks, instructions, isOnline,
+   returns: .json({ success: true, message: 'Exam scheduled successfully.', data: { exam }, }); });
+
+GET /api/exams/:id
+   returns: .json({ success: true, message: 'Exam fetched.', data: { exam, resultStats: resultStats[0] || null }, }); });
+
+PATCH /api/exams/:id   roles: ...teacherRoles
+   returns: .json({ success: true, message: 'Exam updated.', data: { exam }, }); });
+
+DELETE /api/exams/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Exam deleted.', }); });
+
+PATCH /api/exams/:id/status   roles: ...teacherRoles
+   body: status
+   returns: .json({ success: true, message: `Exam status updated to ${status}.`, data: { exam }, }); }); // ═══════════════════════════════════════════ // EXAM RESULTS // ═══════════════════════════════════════════
+
+GET /api/exams/:examId/results   roles: ...teacherRoles, 'receptionist'
+   query: page = 1, limit = 50
+   returns: .json({ success: true, message: 'Exam results fetched.', data: { exam, results: rankedResults, stats, }, pagination: { total, page: parseInt(page), totalPages: Math.ceil(total / parseInt(limit)), }, }); });
+   (paginated)
+
+POST /api/exams/results   roles: ...teacherRoles
+   body: exam, student, marksObtained, isAbsent, isExcused, remarks
+   returns: .json({ success: true, message: 'Result entered successfully.', data: { result }, }); });
+
+POST /api/exams/results/bulk   roles: ...teacherRoles
+   body: exam, results
+   returns: .json({ success: true, message: `${response.saved} results saved. ${response.errors.length} errors.`, data: response, }); });
+
+POST /api/exams/:examId/publish   roles: ...teacherRoles
+   returns: .json({ success: true, message: `${updateResult.modifiedCount} results published.`, data: { published: updateResult.modifiedCount }, }); });
+
+GET /api/exams/student/:studentId/results   roles: ...teacherRoles, 'parent', 'student'
+   query: academicYear, term, subject
+   returns: .json({ success: true, message: 'Student results fetched.', data: { results, bySubject: Object.values(bySubject), }, }); }); // ─── Exam Dashboard Stats ─────────────────────

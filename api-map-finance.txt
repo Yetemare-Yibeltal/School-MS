@@ -1,0 +1,150 @@
+
+##### /api/finance   (finance.routes.js)
+
+GET /api/finance/dashboard   roles: ...financeRoles
+   query: academicYear
+   returns: .json({ success: true, message: 'Financial dashboard fetched.', data: { incomeStats, expenseStats, paymentStats, feeCollectionRate, overdueAssignments, recentPayments, incomeByCategory, expenseByCategory, incomeVsExpense, }, }); });
+
+GET /api/finance/report   roles: ...financeRoles
+   query: academicYear, term, startDate, endDate, type
+   returns: .json({ success: true, message: 'Financial report generated.', data: { academicYear: currentYear, period: { startDate, endDate }, summary: { totalIncome: income, totalExpenses: expenses, netBalance, profitLoss: netBalance >= 0 ? 'Surplus' : 'Deficit', }, feeCollection: feeCollection[0] || { totalAssigned: 0, totalCollected: 0,
+
+GET /api/finance/payments/stats   roles: ...financeRoles
+   query: academicYear
+   returns: .json({ success: true, message: 'Payment stats fetched.', data: stats, }); }); // ═══════════════════════════════════════════ // INCOME // ═══════════════════════════════════════════
+
+GET /api/finance/fee-types   roles: ...financeRoles, 'receptionist'
+   query: category, grade, isActive = true, search
+   returns: .json({ success: true, message: 'Fee types fetched.', data: { feeTypes }, }); });
+
+POST /api/finance/fee-types   roles: ...adminRoles, 'accountant'
+   body: name, code, category, amount, frequency, applicableGrades, isMandatory, isRefundable, refundPolicy, lateFineEnabled, lateFineAmount, lateFinePerDay, gracePeriodDays, dueDate, description, color,
+   returns: .json({ success: true, message: 'Fee type created successfully.', data: { feeType }, }); });
+
+GET /api/finance/fee-types/:id   roles: ...financeRoles
+   returns: .json({ success: true, message: 'Fee type fetched.', data: { feeType }, }); });
+
+PATCH /api/finance/fee-types/:id   roles: ...adminRoles, 'accountant'
+   returns: .json({ success: true, message: 'Fee type updated.', data: { feeType }, }); });
+
+DELETE /api/finance/fee-types/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Fee type deactivated.', }); }); // ═══════════════════════════════════════════ // FEE GROUP // ═══════════════════════════════════════════
+
+GET /api/finance/fee-groups   roles: ...financeRoles
+   query: academicYear, grade
+   returns: .json({ success: true, message: 'Fee groups fetched.', data: { feeGroups }, }); });
+
+POST /api/finance/fee-groups   roles: ...adminRoles, 'accountant'
+   body: name, code, feeTypes, applicableGrades, academicYear, description
+   returns: .json({ success: true, message: 'Fee group created.', data: { feeGroup }, }); });
+
+PATCH /api/finance/fee-groups/:id   roles: ...adminRoles, 'accountant'
+   returns: .json({ success: true, message: 'Fee group updated.', data: { feeGroup }, }); });
+
+DELETE /api/finance/fee-groups/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Fee group deactivated.', }); }); // ═══════════════════════════════════════════ // FEE DISCOUNT // ═══════════════════════════════════════════
+
+GET /api/finance/discounts   roles: ...financeRoles
+   query: category, type, isActive = true
+   returns: .json({ success: true, message: 'Fee discounts fetched.', data: { feeDiscounts }, }); });
+
+POST /api/finance/discounts   roles: ...adminRoles, 'accountant'
+   body: name, code, type, value, applicableTo, feeType, maxDiscountAmount, category, applicableGrades, validFrom, validTo, requiresApproval, description,
+   returns: .json({ success: true, message: 'Fee discount created.', data: { feeDiscount }, }); });
+
+PATCH /api/finance/discounts/:id   roles: ...adminRoles, 'accountant'
+   returns: .json({ success: true, message: 'Fee discount updated.', data: { feeDiscount }, }); });
+
+DELETE /api/finance/discounts/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Fee discount deactivated.', }); }); // ═══════════════════════════════════════════ // FEE ASSIGNMENT // ═══════════════════════════════════════════
+
+GET /api/finance/assignments   roles: ...financeRoles, 'receptionist'
+   query: student, grade, section, feeType, academicYear, term, status, search, page = 1, limit = 20, sort = 'createdAt', order = 'desc',
+   returns: .json({ success: true, message: 'Fee assignments fetched.', data: { assignments }, pagination: { total, page: parseInt(page), limit: parseInt(limit), totalPages: Math.ceil(total / parseInt(limit)), hasNextPage: parseInt(page) < Math.ceil(total / parseInt(limit)), hasPreviousPage: parseInt(page) > 1, }, }); });
+   (paginated)
+
+POST /api/finance/assignments   roles: ...financeRoles
+   body: student, feeType, academicYear, term, amount, dueDate, discounts, allowInstallments, installmentCount, notes,
+   returns: .json({ success: true, message: 'Fee assigned successfully.', data: { assignment }, }); });
+
+POST /api/finance/assignments/bulk   roles: ...financeRoles
+   body: grade, section, feeType, academicYear, term, amount, dueDate, notes
+   returns: .json({ success: true, message: `Assigned to ${results.assigned} students. ${results.skipped} already assigned.`, data: results, }); });
+
+GET /api/finance/assignments/:id   roles: ...financeRoles, 'receptionist', 'parent', 'student'
+   returns: .json({ success: true, message: 'Fee assignment fetched.', data: { assignment, payments }, }); });
+
+PATCH /api/finance/assignments/:id   roles: ...financeRoles
+   returns: .json({ success: true, message: 'Fee assignment updated.', data: { assignment }, }); });
+
+POST /api/finance/assignments/:id/cancel   roles: ...adminRoles, 'accountant'
+   returns: .json({ success: true, message: 'Fee assignment cancelled.', }); }); // ═══════════════════════════════════════════ // FEE PAYMENT // ═══════════════════════════════════════════
+
+GET /api/finance/payments   roles: ...financeRoles, 'receptionist'
+   query: student, grade, feeType, academicYear, term, method, status, search, page = 1, limit = 20, startDate, endDate, sort = 'paymentDate', order = 'desc',
+   returns: .json({ success: true, message: 'Payments fetched.', data: { payments, summary: summary[0] || { totalAmount: 0, count: 0 } }, pagination: { total, page: parseInt(page), limit: parseInt(limit), totalPages: Math.ceil(total / parseInt(limit)), hasNextPage: parseInt(page) < Math.ceil(total / parseInt(limit)), hasPreviousPage: parseInt(page) > 1, }, }); });
+   (paginated)
+
+POST /api/finance/payments   roles: ...financeRoles, 'receptionist'
+   body: feeAssignment, student, amount, method, paymentDate, transactionReference, bankName, chequeNumber, mobileTransactionId, paidBy, guardian, isInstallment, installmentNumber, notes, generateReceipt, sendEmailReceipt,
+   returns: .json({ success: true, message: `Payment of ETB ${amount.toLocaleString()} collected. Receipt: ${receiptNumber}`, data: { payment, receipt }, }); });
+
+GET /api/finance/payments/:id   roles: ...financeRoles, 'receptionist', 'parent', 'student'
+   returns: .json({ success: true, message: 'Payment fetched.', data: { payment, receipt }, }); });
+
+POST /api/finance/payments/:id/refund   roles: ...adminRoles, 'accountant'
+   body: refundAmount, refundReason
+   returns: .json({ success: true, message: `ETB ${actualRefund} refunded successfully.`, data: { payment }, }); });
+
+GET /api/finance/income   roles: ...financeRoles
+   query: category, academicYear, term, status, search, page = 1, limit = 20, sort = 'date', order = 'desc', startDate, endDate,
+   returns: .json({ success: true, message: 'Income records fetched.', data: { income, summary: summary[0] || { total: 0, count: 0 } }, pagination: { total, page: parseInt(page), limit: parseInt(limit), totalPages: Math.ceil(total / parseInt(limit)), hasNextPage: parseInt(page) < Math.ceil(total / parseInt(limit)), hasPreviousPage: parseInt(page) > 1, }, }); });
+   (paginated)
+
+POST /api/finance/income   roles: ...financeRoles
+   body: title, category, subCategory, amount, paymentMethod, date, academicYear, term, source, transactionReference, invoiceNumber, description, notes,
+   returns: .json({ success: true, message: 'Income recorded.', data: { income }, }); });
+
+PATCH /api/finance/income/:id   roles: ...financeRoles
+   returns: .json({ success: true, message: 'Income updated.', data: { income }, }); });
+
+DELETE /api/finance/income/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Income cancelled.', }); }); // ═══════════════════════════════════════════ // EXPENSE // ═══════════════════════════════════════════
+
+GET /api/finance/expense-categories   roles: ...financeRoles, 'admin'
+   query: academicYear
+   returns: .json({ success: true, message: 'Expense categories fetched.', data: { categories: result }, }); });
+
+POST /api/finance/expense-categories   roles: ...adminRoles
+   body: code
+   returns: .json({ success: true, message: 'Expense category created.', data: { category }, }); });
+
+GET /api/finance/expenses   roles: ...financeRoles, 'hr_manager', 'admin'
+   query: category, academicYear, term, status, approvalStatus, department, search, page = 1, limit = 20, sort = 'date', order = 'desc', startDate, endDate,
+   returns: .json({ success: true, message: 'Expenses fetched.', data: { expenses, summary: summary[0] || { total: 0, count: 0 } }, pagination: { total, page: parseInt(page), limit: parseInt(limit), totalPages: Math.ceil(total / parseInt(limit)), hasNextPage: parseInt(page) < Math.ceil(total / parseInt(limit)), hasPreviousPage: parseInt(page) > 1, }, }); });
+   (paginated)
+
+POST /api/finance/expenses   roles: ...financeRoles, 'hr_manager', 'teacher', 'receptionist'
+   body: title, category, amount, taxAmount, date, academicYear, term, vendor, department, invoiceNumber, isBudgeted, budgetedAmount, isRecurring, recurringFrequency, description, notes,
+   returns: .json({ success: true, message: 'Expense submitted for approval.', data: { expense }, }); });
+
+GET /api/finance/expenses/:id   roles: ...financeRoles, 'hr_manager', 'admin', 'teacher'
+   returns: .json({ success: true, message: 'Expense fetched.', data: { expense }, }); });
+
+PATCH /api/finance/expenses/:id   roles: ...financeRoles, 'hr_manager'
+   returns: .json({ success: true, message: 'Expense updated.', data: { expense }, }); });
+
+POST /api/finance/expenses/:id/approve   roles: ...financeRoles
+   body: remarks, approvalLevel = 'first'
+   returns: .json({ success: true, message: `Expense ${approvalLevel === 'second' ? 'fully' : 'first-level'} approved.`, data: { expense }, }); });
+
+POST /api/finance/expenses/:id/reject   roles: ...financeRoles, 'admin'
+   body: reason
+   returns: .json({ success: true, message: 'Expense rejected.', data: { expense }, }); });
+
+POST /api/finance/expenses/:id/mark-paid   roles: ...financeRoles
+   body: paymentMethod, paymentReference
+   returns: .json({ success: true, message: 'Expense marked as paid.', data: { expense }, }); });
+
+DELETE /api/finance/expenses/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Expense cancelled.', }); }); // ═══════════════════════════════════════════ // FINANCIAL DASHBOARD // ═══════════════════════════════════════════

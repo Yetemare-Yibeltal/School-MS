@@ -1,471 +1,234 @@
-// ============================================
-// KAT SCHOOL MANAGEMENT SYSTEM
-// DEPARTMENTS PAGE
-// kat-school/client/src/pages/hrm/DepartmentsPage.jsx
-// ============================================
-
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-
 import api from '../../services/api';
+import Modal from '../../components/common/Modal';
+import { useAuthStore } from '../../store/authStore';
 
-const Modal = ({ isOpen, title, children, onClose }) => {
-  if (!isOpen) {
-    return null;
-  }
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg animate-slide-up">
-        <div className="flex items-center justify-between px-6 py-4 border-b">
-          <h3 className="text-base font-bold">{title}</h3>
-          <button onClick={onClose} className="btn-icon btn-ghost">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
-        <div className="p-6">{children}</div>
-      </div>
-    </div>
-  );
-};
+const emptyDept = { name: '', code: '', description: '' };
+const emptyDesig = { name: '', code: '', department: '', level: '1' };
 
 const DepartmentsPage = () => {
-  const queryClient = useQueryClient();
-  const [modal, setModal] = useState({ open: false, type: null, data: null, subType: null });
-  const [errors, setErrors] = useState({});
+  const qc = useQueryClient();
+  const canEdit = ['super_admin', 'admin'].includes(useAuthStore((s) => s.user?.role));
+  const [deptModal, setDeptModal] = useState({ open: false, item: null });
+  const [desigModal, setDesigModal] = useState(false);
+  const [d, setD] = useState(emptyDept);
+  const [g, setG] = useState(emptyDesig);
 
-  const initDeptForm = () => ({ name: '', code: '', description: '', headOf: '' });
-  const initDesigForm = () => ({ name: '', code: '', department: '', level: '1', description: '' });
-  const [deptForm, setDeptForm] = useState(initDeptForm());
-  const [desigForm, setDesigForm] = useState(initDesigForm());
-
-  const { data: deptData, isLoading } = useQuery({
+  const { data: departments = [], isLoading } = useQuery({
     queryKey: ['departments'],
-    queryFn: async () => {
-      const res = await api.get('/hrm/departments');
-      return res.data.data.departments;
-    },
+    queryFn: async () => (await api.get('/hrm/departments')).data.data.departments,
+  });
+  const { data: designations = [] } = useQuery({
+    queryKey: ['designations'],
+    queryFn: async () => (await api.get('/hrm/designations')).data.data.designations,
   });
 
-  const { data: designationsData } = useQuery({
-    queryKey: ['designations-all'],
-    queryFn: async () => {
-      const res = await api.get('/hrm/designations');
-      return res.data.data.designations;
-    },
-  });
-
-  const { data: employeesData } = useQuery({
-    queryKey: ['employees-active-list'],
-    queryFn: async () => {
-      const res = await api.get('/employees?status=active&limit=100');
-      return res.data.data.employees;
-    },
-  });
-
-  const createDeptMutation = useMutation({
-    mutationFn: (data) => api.post('/hrm/departments', data),
-    onSuccess: () => {
-      toast.success('Department created.');
-      queryClient.invalidateQueries({ queryKey: ['departments'] });
-      closeModal();
-    },
-    onError: (err) => toast.error(err.response?.data?.message || 'Failed.'),
-  });
-
-  const updateDeptMutation = useMutation({
-    mutationFn: ({ id, data }) => api.patch(`/hrm/departments/${id}`, data),
-    onSuccess: () => {
-      toast.success('Department updated.');
-      queryClient.invalidateQueries({ queryKey: ['departments'] });
-      closeModal();
-    },
-    onError: (err) => toast.error(err.response?.data?.message || 'Failed.'),
-  });
-
-  const createDesigMutation = useMutation({
-    mutationFn: (data) => api.post('/hrm/designations', data),
-    onSuccess: () => {
-      toast.success('Designation created.');
-      queryClient.invalidateQueries({ queryKey: ['designations-all'] });
-      closeModal();
-    },
-    onError: (err) => toast.error(err.response?.data?.message || 'Failed.'),
-  });
-
-  const closeModal = () => {
-    setModal({ open: false, type: null, data: null, subType: null });
-    setDeptForm(initDeptForm());
-    setDesigForm(initDesigForm());
-    setErrors({});
+  const fail = (err) => toast.error(err.response?.data?.message || 'Request failed.');
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey: ['departments'] });
+    qc.invalidateQueries({ queryKey: ['designations'] });
   };
 
-  const openCreateDept = () => {
-    setDeptForm(initDeptForm());
-    setModal({ open: true, type: 'dept', subType: 'create', data: null });
+  const saveDept = useMutation({
+    mutationFn: (p) =>
+      deptModal.item
+        ? api.patch(`/hrm/departments/${deptModal.item._id}`, p)
+        : api.post('/hrm/departments', p),
+    onSuccess: () => {
+      toast.success('Department saved.');
+      refresh();
+      setDeptModal({ open: false, item: null });
+    },
+    onError: fail,
+  });
+  const removeDept = useMutation({
+    mutationFn: (id) => api.delete(`/hrm/departments/${id}`),
+    onSuccess: () => {
+      toast.success('Department deactivated.');
+      refresh();
+    },
+    onError: fail,
+  });
+  const saveDesig = useMutation({
+    mutationFn: (p) => api.post('/hrm/designations', p),
+    onSuccess: () => {
+      toast.success('Designation saved.');
+      refresh();
+      setDesigModal(false);
+    },
+    onError: fail,
+  });
+
+  const openDept = (item) => {
+    setD(
+      item
+        ? { name: item.name, code: item.code || '', description: item.description || '' }
+        : emptyDept
+    );
+    setDeptModal({ open: true, item });
   };
-  const openEditDept = (dept) => {
-    setDeptForm({
-      name: dept.name,
-      code: dept.code || '',
-      description: dept.description || '',
-      headOf: dept.headOf?._id || '',
+  const openDesig = (deptId) => {
+    setG({ ...emptyDesig, department: deptId });
+    setDesigModal(true);
+  };
+
+  const submitDept = (e) => {
+    e.preventDefault();
+    if (!d.name.trim() || !d.code.trim()) {
+      toast.error('Name and code are required.');
+      return;
+    }
+    saveDept.mutate({
+      name: d.name.trim(),
+      code: d.code.trim().toUpperCase(),
+      description: d.description || undefined,
     });
-    setModal({ open: true, type: 'dept', subType: 'edit', data: dept });
   };
-  const openCreateDesig = (deptId) => {
-    setDesigForm({ ...initDesigForm(), department: deptId });
-    setModal({ open: true, type: 'desig', subType: 'create', data: null });
-  };
-
-  const updateDeptField = (f, v) => {
-    setDeptForm((p) => ({ ...p, [f]: v }));
-    if (errors[f]) {
-      setErrors((p) => ({ ...p, [f]: null }));
-    }
-  };
-  const updateDesigField = (f, v) => {
-    setDesigForm((p) => ({ ...p, [f]: v }));
-    if (errors[f]) {
-      setErrors((p) => ({ ...p, [f]: null }));
-    }
-  };
-
-  const validateDept = () => {
-    const newErrors = {};
-    if (!deptForm.name.trim()) {
-      newErrors.name = 'Name is required.';
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const validateDesig = () => {
-    const newErrors = {};
-    if (!desigForm.name.trim()) {
-      newErrors.name = 'Name is required.';
-    }
-    if (!desigForm.department) {
-      newErrors.department = 'Department is required.';
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleDeptSubmit = (e) => {
+  const submitDesig = (e) => {
     e.preventDefault();
-    if (!validateDept()) {
+    if (!g.name.trim() || !g.code.trim() || !g.department) {
+      toast.error('Name, code and department are required.');
       return;
     }
-    const payload = {
-      name: deptForm.name.trim(),
-      code: deptForm.code.trim().toUpperCase() || undefined,
-      description: deptForm.description || undefined,
-      headOf: deptForm.headOf || undefined,
-    };
-    if (modal.subType === 'create') {
-      createDeptMutation.mutate(payload);
-    } else {
-      updateDeptMutation.mutate({ id: modal.data._id, data: payload });
-    }
-  };
-
-  const handleDesigSubmit = (e) => {
-    e.preventDefault();
-    if (!validateDesig()) {
-      return;
-    }
-    createDesigMutation.mutate({
-      name: desigForm.name.trim(),
-      code: desigForm.code.trim().toUpperCase() || undefined,
-      department: desigForm.department,
-      level: parseInt(desigForm.level) || 1,
-      description: desigForm.description || undefined,
+    saveDesig.mutate({
+      name: g.name.trim(),
+      code: g.code.trim().toUpperCase(),
+      department: g.department,
+      level: parseInt(g.level, 10) || 1,
     });
   };
 
-  const departments = deptData || [];
-  const designationsByDept = (deptId) =>
-    (designationsData || []).filter((d) => (d.department?._id || d.department) === deptId);
+  const of = (deptId) => designations.filter((x) => (x.department?._id || x.department) === deptId);
 
   return (
     <div className="space-y-5">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Departments & Designations</h1>
-          <p className="page-subtitle">
-            {departments.length} department{departments.length !== 1 ? 's' : ''}
-          </p>
+          <h1 className="page-title">Departments</h1>
+          <p className="page-subtitle">{departments.length} departments</p>
         </div>
-        <button onClick={openCreateDept} className="btn-primary">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Add Department
-        </button>
+        {canEdit && (
+          <button type="button" className="btn-primary" onClick={() => openDept(null)}>
+            Add Department
+          </button>
+        )}
       </div>
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-pulse">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="card p-4">
-              <div className="h-40 bg-slate-100 rounded" />
+      {isLoading && <div className="card p-8 text-center text-slate-400">Loading...</div>}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {departments.map((x) => (
+          <div key={x._id} className="card p-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold">
+                {x.name} <span className="badge badge-gray">{x.code}</span>
+              </h3>
+              {canEdit && (
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    className="btn-outline btn-sm"
+                    onClick={() => openDesig(x._id)}
+                  >
+                    + Designation
+                  </button>
+                  <button type="button" className="btn-outline btn-sm" onClick={() => openDept(x)}>
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-danger btn-sm"
+                    onClick={() =>
+                      window.confirm(`Deactivate ${x.name}?`) && removeDept.mutate(x._id)
+                    }
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
             </div>
-          ))}
-        </div>
-      ) : departments.length === 0 ? (
-        <div className="card p-12 text-center">
-          <div className="text-5xl mb-4">🏢</div>
-          <p className="text-slate-500">No departments configured</p>
-          <button onClick={openCreateDept} className="btn-primary mt-4">
-            Add First Department
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {departments.map((dept) => {
-            const designations = designationsByDept(dept._id);
-            return (
-              <div key={dept._id} className="card">
-                <div className="p-4 border-b border-slate-100">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-700 font-bold text-sm">
-                        {dept.code || dept.name.slice(0, 2).toUpperCase()}
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-bold text-slate-900">{dept.name}</h3>
-                        {dept.headOfName && (
-                          <p className="text-xs text-slate-400">Head: {dept.headOfName}</p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => openCreateDesig(dept._id)}
-                        className="btn-outline btn-sm text-xs"
-                      >
-                        + Designation
-                      </button>
-                      <button onClick={() => openEditDept(dept)} className="btn-icon btn-ghost">
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-3">
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
-                    Designations ({designations.length})
-                  </p>
-                  {designations.length === 0 ? (
-                    <p className="text-xs text-slate-400 py-2 text-center">No designations yet</p>
-                  ) : (
-                    <div className="flex flex-wrap gap-1.5">
-                      {designations.map((desig) => (
-                        <span
-                          key={desig._id}
-                          className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs rounded-lg border border-slate-200 font-medium"
-                        >
-                          {desig.name}
-                          {desig.level > 1 && (
-                            <span className="ml-1 text-slate-400">L{desig.level}</span>
-                          )}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+            <div className="flex flex-wrap gap-2 mt-3">
+              {of(x._id).length === 0 && (
+                <span className="text-xs text-slate-400">No designations</span>
+              )}
+              {of(x._id).map((s) => (
+                <span key={s._id} className="badge badge-primary">
+                  {s.name}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
 
-      {/* Department Modal */}
       <Modal
-        isOpen={modal.open && modal.type === 'dept'}
-        title={modal.subType === 'create' ? 'Add Department' : 'Edit Department'}
-        onClose={closeModal}
+        open={deptModal.open}
+        title={deptModal.item ? 'Edit Department' : 'Add Department'}
+        onClose={() => setDeptModal({ open: false, item: null })}
       >
-        <form onSubmit={handleDeptSubmit} className="space-y-4">
+        <form onSubmit={submitDept}>
           <div className="form-group">
-            <label className="form-label">
-              Department Name <span className="text-red-500">*</span>
-            </label>
+            <label className="form-label">Name</label>
             <input
-              type="text"
-              value={deptForm.name}
-              onChange={(e) => updateDeptField('name', e.target.value)}
-              placeholder="e.g. Administration"
-              className={errors.name ? 'form-input-error' : 'form-input'}
-              autoFocus
+              className="form-input"
+              value={d.name}
+              onChange={(e) => setD((p) => ({ ...p, name: e.target.value }))}
             />
-            {errors.name && <p className="form-error">{errors.name}</p>}
           </div>
           <div className="form-group">
             <label className="form-label">Code</label>
             <input
-              type="text"
-              value={deptForm.code}
-              onChange={(e) => updateDeptField('code', e.target.value.toUpperCase())}
-              placeholder="ADM"
               className="form-input"
+              value={d.code}
+              onChange={(e) => setD((p) => ({ ...p, code: e.target.value }))}
             />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Head of Department</label>
-            <select
-              value={deptForm.headOf}
-              onChange={(e) => updateDeptField('headOf', e.target.value)}
-              className="form-select"
-            >
-              <option value="">Not assigned</option>
-              {(employeesData || []).map((e) => (
-                <option key={e._id} value={e._id}>
-                  {e.firstName} {e.fatherName} — {e.designationName}
-                </option>
-              ))}
-            </select>
           </div>
           <div className="form-group">
             <label className="form-label">Description</label>
             <textarea
-              value={deptForm.description}
-              onChange={(e) => updateDeptField('description', e.target.value)}
-              placeholder="Optional"
               className="form-textarea"
-              rows={2}
+              value={d.description}
+              onChange={(e) => setD((p) => ({ ...p, description: e.target.value }))}
             />
           </div>
-          <div className="flex gap-3">
-            <button type="button" onClick={closeModal} className="btn-outline flex-1">
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={createDeptMutation.isPending || updateDeptMutation.isPending}
-              className="btn-primary flex-1"
-            >
-              {createDeptMutation.isPending || updateDeptMutation.isPending ? (
-                <div className="spinner-sm" />
-              ) : modal.subType === 'create' ? (
-                'Create'
-              ) : (
-                'Save'
-              )}
-            </button>
-          </div>
+          <button type="submit" disabled={saveDept.isPending} className="btn-primary w-full">
+            {saveDept.isPending ? 'Saving...' : 'Save'}
+          </button>
         </form>
       </Modal>
 
-      {/* Designation Modal */}
-      <Modal
-        isOpen={modal.open && modal.type === 'desig'}
-        title="Add Designation"
-        onClose={closeModal}
-      >
-        <form onSubmit={handleDesigSubmit} className="space-y-4">
+      <Modal open={desigModal} title="Add Designation" onClose={() => setDesigModal(false)}>
+        <form onSubmit={submitDesig}>
           <div className="form-group">
-            <label className="form-label">
-              Designation Name <span className="text-red-500">*</span>
-            </label>
+            <label className="form-label">Name</label>
             <input
-              type="text"
-              value={desigForm.name}
-              onChange={(e) => updateDesigField('name', e.target.value)}
-              placeholder="e.g. Senior Accountant"
-              className={errors.name ? 'form-input-error' : 'form-input'}
-              autoFocus
-            />
-            {errors.name && <p className="form-error">{errors.name}</p>}
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="form-group mb-0">
-              <label className="form-label">Code</label>
-              <input
-                type="text"
-                value={desigForm.code}
-                onChange={(e) => updateDesigField('code', e.target.value.toUpperCase())}
-                placeholder="SR-ACC"
-                className="form-input"
-              />
-            </div>
-            <div className="form-group mb-0">
-              <label className="form-label">Level</label>
-              <input
-                type="number"
-                value={desigForm.level}
-                onChange={(e) => updateDesigField('level', e.target.value)}
-                min="1"
-                max="10"
-                className="form-input"
-              />
-            </div>
-          </div>
-          <div className="form-group">
-            <label className="form-label">
-              Department <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={desigForm.department}
-              onChange={(e) => updateDesigField('department', e.target.value)}
-              className={errors.department ? 'form-input-error' : 'form-select'}
-            >
-              <option value="">Select department</option>
-              {departments.map((d) => (
-                <option key={d._id} value={d._id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
-            {errors.department && <p className="form-error">{errors.department}</p>}
-          </div>
-          <div className="form-group">
-            <label className="form-label">Description</label>
-            <textarea
-              value={desigForm.description}
-              onChange={(e) => updateDesigField('description', e.target.value)}
-              placeholder="Optional"
-              className="form-textarea"
-              rows={2}
+              className="form-input"
+              value={g.name}
+              onChange={(e) => setG((p) => ({ ...p, name: e.target.value }))}
             />
           </div>
-          <div className="flex gap-3">
-            <button type="button" onClick={closeModal} className="btn-outline flex-1">
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={createDesigMutation.isPending}
-              className="btn-primary flex-1"
-            >
-              {createDesigMutation.isPending ? (
-                <div className="spinner-sm" />
-              ) : (
-                'Create Designation'
-              )}
-            </button>
+          <div className="form-group">
+            <label className="form-label">Code</label>
+            <input
+              className="form-input"
+              value={g.code}
+              onChange={(e) => setG((p) => ({ ...p, code: e.target.value }))}
+            />
           </div>
+          <div className="form-group">
+            <label className="form-label">Level</label>
+            <input
+              type="number"
+              min="1"
+              className="form-input"
+              value={g.level}
+              onChange={(e) => setG((p) => ({ ...p, level: e.target.value }))}
+            />
+          </div>
+          <button type="submit" disabled={saveDesig.isPending} className="btn-primary w-full">
+            {saveDesig.isPending ? 'Saving...' : 'Save'}
+          </button>
         </form>
       </Modal>
     </div>

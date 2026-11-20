@@ -1,0 +1,37 @@
+
+##### /api/report-cards   (reportCard.routes.js)
+
+GET /api/report-cards/dashboard   roles: ...teacherRoles, 'receptionist'
+   query: academicYear, term
+   returns: .json({ success: true, message: 'Report card dashboard fetched.', data: { total, draft, published, byGrade, topStudents, }, }); }); // ─── Update Report Card Comment ───────────────
+
+POST /api/report-cards/bulk-generate   roles: ...teacherRoles
+   body: grade, section, academicYearId, termId
+   returns: .json({ success: true, message: `Generated ${results.generated} report cards. ${results.errors.length} errors.`, data: results, }); }); // ─── Bulk Publish Report Cards ────────────────
+
+POST /api/report-cards/bulk-publish   roles: ...adminRoles
+   body: grade, section, academicYearId, termId
+   returns: .json({ success: true, message: `${result.modifiedCount} report cards published.`, data: { published: result.modifiedCount }, }); }); // ─── Get Section Report Cards ─────────────────
+
+POST /api/report-cards/generate/:studentId/:academicYearId/:termId   roles: ...teacherRoles
+   returns: .json({ success: true, message: 'Report card generated successfully.', data: { reportCard }, }); }); // ─── Get Report Card ──────────────────────────
+
+GET /api/report-cards/student/:studentId   roles: ...teacherRoles, 'parent', 'student', 'receptionist'
+   returns: .json({ success: true, message: 'Student report cards fetched.', data: { reportCards }, }); }); // ─── Publish Report Card ──────────────────────
+
+GET /api/report-cards/student/:studentId/:academicYearId/:termId   roles: ...teacherRoles, 'parent', 'student', 'receptionist'
+   returns: .json({ success: true, message: 'Report card fetched.', data: { reportCard }, }); }); // ─── Get Student Report Cards ─────────────────
+
+GET /api/report-cards/section/:sectionId   roles: ...teacherRoles, 'receptionist'
+   query: academicYear, term
+   returns: .json({ success: true, message: 'Section report cards fetched.', data: { reportCards: ranked }, }); }); // ─── Download Report Card PDF ─────────────────
+
+GET /api/report-cards/:id
+   returns: .json({ success: true, message: 'Report card HTML generated.', data: { html: htmlContent, reportCard, }, }); }); // ─── Get Report Card Dashboard ────────────────
+
+PATCH /api/report-cards/:id/comment   roles: ...teacherRoles
+   body: teacherComment, principalComment, conductGrade, effortGrade
+   returns: .json({ success: true, message: 'Report card comment updated.', data: { reportCard }, }); });
+
+PATCH /api/report-cards/:id/publish   roles: ...teacherRoles
+   returns: .json({ success: true, message: 'Report card published.', data: { reportCard }, }); }); // ─── Bulk Generate Report Cards ───────────────
