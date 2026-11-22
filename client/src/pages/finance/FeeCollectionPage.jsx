@@ -537,7 +537,13 @@ const FeeCollectionPage = () => {
                 <b>{v || '-'}</b>
               </div>
             ))}
-           
+            <button
+              type="button"
+              className="btn-outline w-full mt-3"
+              onClick={() => window.print()}
+            >
+              Print
+            </button>
           </div>
         )}
       </Modal>
