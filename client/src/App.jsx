@@ -46,12 +46,20 @@ const ExamDetailPage = lazy(() => import('./pages/exams/ExamDetailPage'));
 const EnterResultsPage = lazy(() => import('./pages/exams/EnterResultsPage'));
 const ReportCardsPage = lazy(() => import('./pages/exams/ReportCardsPage'));
 
+const FinanceDashboardPage = lazy(() => import('./pages/finance/FinanceDashboardPage'));
+const FeeCollectionPage = lazy(() => import('./pages/finance/FeeCollectionPage'));
+const FeeTypesPage = lazy(() => import('./pages/finance/FeeTypesPage'));
+const PaymentsPage = lazy(() => import('./pages/finance/PaymentsPage'));
+const IncomePage = lazy(() => import('./pages/finance/IncomePage'));
+const ExpensesPage = lazy(() => import('./pages/finance/ExpensesPage'));
+
 const ADMIN = ['super_admin', 'admin'];
 const STUDENT_VIEW = [...ADMIN, 'teacher', 'receptionist', 'accountant', 'librarian'];
 const STUDENT_EDIT = [...ADMIN, 'receptionist'];
 const HR = [...ADMIN, 'hr_manager'];
 const STAFF = [...ADMIN, 'teacher', 'receptionist'];
 const TEACHER = [...ADMIN, 'teacher'];
+const FINANCE = [...ADMIN, 'accountant'];
 
 const guard = (roles, element) => <ProtectedRoute roles={roles}>{element}</ProtectedRoute>;
 
@@ -113,6 +121,13 @@ const App = () => (
         <Route path="/exams/:id" element={guard(TEACHER, <ExamDetailPage />)} />
         <Route path="/exams/:id/results" element={guard(TEACHER, <EnterResultsPage />)} />
         <Route path="/report-cards" element={guard(TEACHER, <ReportCardsPage />)} />
+
+        <Route path="/finance" element={guard(FINANCE, <FinanceDashboardPage />)} />
+        <Route path="/finance/fee-collection" element={guard(FINANCE, <FeeCollectionPage />)} />
+        <Route path="/finance/fee-types" element={guard(FINANCE, <FeeTypesPage />)} />
+        <Route path="/finance/payments" element={guard(FINANCE, <PaymentsPage />)} />
+        <Route path="/finance/income" element={guard(FINANCE, <IncomePage />)} />
+        <Route path="/finance/expenses" element={guard(FINANCE, <ExpensesPage />)} />
       </Route>
 
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
