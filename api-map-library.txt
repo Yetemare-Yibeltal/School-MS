@@ -1,0 +1,108 @@
+
+##### /api/library   (library.routes.js)
+
+GET /api/library/dashboard   roles: ...libRoles, 'teacher', 'receptionist'
+   returns: .json({ success: true, message: 'Library dashboard fetched.', data: { bookStats, categoryStats, memberStats, issueStats, overdueIssues, recentIssues, popularBooks, readyForCollection, }, }); }); // ─── Batch Overdue Check ──────────────────────
+
+POST /api/library/overdue/check   roles: ...libRoles
+   returns: .json({ success: true, message: `${count} book issue(s) marked as overdue.`, data: { markedOverdue: count }, }); }); // ─── Send Overdue Notifications ───────────────
+
+POST /api/library/overdue/notify   roles: ...libRoles
+   returns: .json({ success: true, message: `Overdue notifications sent to ${notified} member(s).`, data: { notified }, }); });
+
+GET /api/library/categories
+   query: withCounts
+   returns: .json({ success: true, message: 'Book categories fetched.', data: { categories }, }); });
+
+POST /api/library/categories   roles: ...libRoles
+   body: code
+   returns: .json({ success: true, message: 'Book category created.', data: { category }, }); });
+
+PATCH /api/library/categories/:id   roles: ...libRoles
+   returns: .json({ success: true, message: 'Book category updated.', data: { category }, }); });
+
+DELETE /api/library/categories/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Book category deactivated.', }); }); // ═══════════════════════════════════════════ // BOOK // ═══════════════════════════════════════════
+
+GET /api/library/books
+   query: category, language, grade, isAvailable, isReference, acquisitionSource, search, page = 1, limit = 20, sort = 'title', order = 'asc',
+   returns: .json({ success: true, message: 'Books fetched.', data: { books }, pagination: { total, page: parseInt(page), limit: parseInt(limit), totalPages: Math.ceil(total / parseInt(limit)), hasNextPage: parseInt(page) < Math.ceil(total / parseInt(limit)), hasPreviousPage: parseInt(page) > 1, }, }); });
+   (paginated)
+
+POST /api/library/books   roles: ...libRoles
+   body: title, isbn, authors, editors, translators, publisher, publicationYear, edition, publicationPlace, category, deweyDecimal, subjects, suitableForGrades, language, description, numberOfPages, totalCopies, copies, shelfLocation, purchasePrice, finePerDay, acquisitionDate, acquisitionSource, donorName, isReference, canBeIssued, notes,
+   returns: .json({ success: true, message: 'Book added to library.', data: { book }, }); });
+
+GET /api/library/books/:id
+   returns: .json({ success: true, message: 'Book fetched.', data: { book, currentIssues, reservations }, }); });
+
+PATCH /api/library/books/:id   roles: ...libRoles
+   returns: .json({ success: true, message: 'Book updated.', data: { book }, }); });
+
+DELETE /api/library/books/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Book deactivated.', }); });
+
+POST /api/library/books/:id/cover   roles: ...libRoles
+   returns: .json({ success: true, message: 'Cover image uploaded.', data: { coverImage: updatedBook.coverImage }, }); }); // ═══════════════════════════════════════════ // LIBRARY MEMBER // ═══════════════════════════════════════════
+
+GET /api/library/members   roles: ...libRoles, 'receptionist'
+   query: memberType, status, search, page = 1, limit = 20
+   returns: .json({ success: true, message: 'Library members fetched.', data: { members }, pagination: { total, page: parseInt(page), limit: parseInt(limit), totalPages: Math.ceil(total / parseInt(limit)), }, }); });
+   (paginated)
+
+POST /api/library/members   roles: ...libRoles, 'receptionist'
+   body: memberType, student, teacher, employee, maxBooksAllowed, maxLoanDays, notes
+   returns: .json({ success: true, message: 'Library member registered.', data: { member: result.member }, }); });
+
+GET /api/library/members/by-membership/:membershipId   roles: ...libRoles, 'receptionist'
+   returns: .json({ success: true, message: 'Library member fetched.', data: { member, eligibility }, }); });
+
+GET /api/library/members/:id   roles: ...libRoles, 'receptionist', 'student', 'teacher'
+   returns: .json({ success: true, message: 'Library member fetched.', data: { member, activeIssues }, }); });
+
+PATCH /api/library/members/:id   roles: ...libRoles
+   returns: .json({ success: true, message: 'Library member updated.', data: { member }, }); });
+
+POST /api/library/members/:id/suspend   roles: ...libRoles
+   body: reason, suspendedUntil
+   returns: .json({ success: true, message: 'Library member suspended.', data: { member }, }); });
+
+POST /api/library/members/:id/reactivate   roles: ...libRoles
+   returns: .json({ success: true, message: 'Library member reactivated.', data: { member }, }); }); // ═══════════════════════════════════════════ // BOOK ISSUE // ═══════════════════════════════════════════
+
+GET /api/library/issues   roles: ...libRoles, 'receptionist'
+   query: status, memberType, grade, academicYear, search, page = 1, limit = 20, overdue,
+   returns: .json({ success: true, message: 'Book issues fetched.', data: { issues }, pagination: { total, page: parseInt(page), limit: parseInt(limit), totalPages: Math.ceil(total / parseInt(limit)), hasNextPage: parseInt(page) < Math.ceil(total / parseInt(limit)), hasPreviousPage: parseInt(page) > 1, }, }); });
+   (paginated)
+
+POST /api/library/issues   roles: ...libRoles, 'receptionist'
+   body: book, libraryMember, notes
+   returns: .json({ success: true, message: `Book issued. Due date: ${issue.dueDate?.toLocaleDateString('en-ET')}`, data: { issue }, }); });
+
+GET /api/library/issues/:id   roles: ...libRoles, 'receptionist', 'student', 'teacher'
+   returns: .json({ success: true, message: 'Book issue fetched.', data: { issue }, }); });
+
+POST /api/library/issues/:id/return   roles: ...libRoles, 'receptionist'
+   body: returnCondition, returnRemarks, payFine, waiveFine, waivedAmount, waivedReason
+   returns: .json({ success: true, message: `Book returned${updatedIssue.fineAmount > 0 ? `. Fine: ETB ${updatedIssue.outstandingFine}` : '.'}`, data: { issue: updatedIssue }, }); });
+
+POST /api/library/issues/:id/renew   roles: ...libRoles, 'receptionist', 'student', 'teacher'
+   body: additionalDays
+   returns: .json({ success: true, message: `Book renewed. New due date: ${issue.dueDate?.toLocaleDateString('en-ET')}`, data: { issue }, }); });
+
+POST /api/library/issues/:id/pay-fine   roles: ...libRoles, 'receptionist'
+   body: amount, paidBy
+   returns: .json({ success: true, message: `Fine payment of ETB ${amount} recorded.`, data: { issue }, }); }); // ═══════════════════════════════════════════ // BOOK RESERVATION // ═══════════════════════════════════════════
+
+GET /api/library/reservations   roles: ...libRoles, 'receptionist'
+   query: status, memberType, page = 1, limit = 20
+   returns: .json({ success: true, message: 'Reservations fetched.', data: { reservations }, pagination: { total, page: parseInt(page), limit: parseInt(limit), totalPages: Math.ceil(total / parseInt(limit)), }, }); }); // ═══════════════════════════════════════════ // LIBRARY DASHBOARD // ═══════════════════════════════════════════
+   (paginated)
+
+POST /api/library/reservations
+   body: book, libraryMember, notes
+   returns: .json({ success: true, message: result.message, data: { reservation: result.reservation }, }); });
+
+POST /api/library/reservations/:id/cancel
+   body: reason
+   returns: .json({ success: true, message: 'Reservation cancelled.', data: { reservation }, }); });

@@ -1,0 +1,153 @@
+
+##### /api/communications   (communication.routes.js)
+
+GET /api/communications/notices/dashboard   roles: ...adminRoles, 'teacher', 'receptionist'
+   returns: .json({ success: true, message: 'Notice dashboard fetched.', data: stats, }); }); // ═══════════════════════════════════════════ // EVENT // ═══════════════════════════════════════════
+
+GET /api/communications/notices/published
+   query: audience, grade, limit = 20
+   returns: .json({ success: true, message: 'Published notices fetched.', data: { notices }, }); });
+
+GET /api/communications/notices   roles: ...staffRoles
+   query: status, category, priority, targetAudience, grade, academicYear, search, page = 1, limit = 20, sort = 'publishDate', order = 'desc', isPinned,
+   returns: .json({ success: true, message: 'Notices fetched.', data: { notices }, pagination: { total, page: parseInt(page), limit: parseInt(limit), totalPages: Math.ceil(total / parseInt(limit)), hasNextPage: parseInt(page) < Math.ceil(total / parseInt(limit)), hasPreviousPage: parseInt(page) > 1, }, }); });
+   (paginated)
+
+POST /api/communications/notices   roles: ...adminRoles, 'teacher'
+   body: title, summary, content, category, priority, targetAudience, targetGrades, targetSections, publishDate, expiryDate, sendNotification, notificationMethod, isPinned, pinnedUntil, tags, internalNotes, academicYear, term, isAIGenerated, aiPrompt,
+   returns: .json({ success: true, message: `Notice ${notice.status === 'draft' ? 'saved as draft' : notice.status === 'scheduled' ? 'scheduled' : 'published'}.`, data: { notice }, }); });
+
+GET /api/communications/notices/:id
+   returns: .json({ success: true, message: 'Notice fetched.', data: { notice }, }); });
+
+PATCH /api/communications/notices/:id   roles: ...adminRoles, 'teacher'
+   returns: .json({ success: true, message: 'Notice updated.', data: { notice }, }); });
+
+DELETE /api/communications/notices/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Notice deleted.', }); });
+
+POST /api/communications/notices/:id/publish   roles: ...adminRoles, 'teacher'
+   returns: .json({ success: true, message: 'Notice published.', data: { notice }, }); });
+
+POST /api/communications/notices/:id/recall   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Notice recalled.', data: { notice }, }); });
+
+POST /api/communications/notices/:id/pin   roles: ...adminRoles
+   body: pinnedUntil
+   returns: .json({ success: true, message: 'Notice pinned.', data: { notice } }); });
+
+POST /api/communications/notices/:id/unpin   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Notice unpinned.', data: { notice } }); });
+
+GET /api/communications/events/dashboard   roles: ...adminRoles, 'teacher', 'receptionist'
+   returns: .json({ success: true, message: 'Event dashboard fetched.', data: stats, }); }); // ═══════════════════════════════════════════ // MESSAGING // ═══════════════════════════════════════════
+
+GET /api/communications/events/calendar
+   query: startDate, endDate, audience, grade
+   returns: .json({ success: true, message: 'Calendar events fetched.', data: { events }, }); });
+
+GET /api/communications/events
+   query: status, type, audience, grade, academicYear, search, page = 1, limit = 20, startDate, endDate,
+   returns: .json({ success: true, message: 'Events fetched.', data: { events }, pagination: { total, page: parseInt(page), limit: parseInt(limit), totalPages: Math.ceil(total / parseInt(limit)), }, }); });
+   (paginated)
+
+POST /api/communications/events   roles: ...adminRoles, 'teacher'
+   body: title, description, summary, type, startDate, endDate, startTime, endTime, isAllDay, venue, venueDetails, room, organizer, coOrganizers, targetAudience, targetGrades, hasCapacityLimit, maxAttendees, requiresRegistration, registrationDeadline, color, isRecurring, recurrencePattern, sendReminder, reminderDaysBefore, tags, internalNotes, academicYear, term,
+   returns: .json({ success: true, message: 'Event created.', data: { event }, }); });
+
+GET /api/communications/events/:id
+   returns: .json({ success: true, message: 'Event fetched.', data: { event }, }); });
+
+PATCH /api/communications/events/:id   roles: ...adminRoles, 'teacher'
+   returns: .json({ success: true, message: 'Event updated.', data: { event } }); });
+
+DELETE /api/communications/events/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Event cancelled.' }); });
+
+POST /api/communications/events/:id/publish   roles: ...adminRoles, 'teacher'
+   returns: .json({ success: true, message: 'Event published.', data: { event } }); });
+
+POST /api/communications/events/:id/register
+   returns: .json({ success: true, message: 'Registered for event.', data: { event }, }); });
+
+GET /api/communications/messages/inbox
+   query: page = 1, limit = 20
+   returns: .json({ success: true, message: 'Inbox fetched.', data: { threads, unreadCount }, }); });
+
+POST /api/communications/messages/send
+   body: recipientId, subject, content, messageType, attachments, replyToId, context, relatedStudentId, relatedStudentName,
+   returns: .json({ success: true, message: 'Message sent.', data: { message, thread, isNewThread: isNew }, }); });
+
+GET /api/communications/messages/search
+   query: q
+   returns: .json({ success: true, message: 'Threads searched.', data: { threads }, }); });
+
+GET /api/communications/messages/thread/:threadId
+   query: page = 1, limit = 50
+   returns: .json({ success: true, message: 'Messages fetched.', data: { thread, messages, displayName: thread.getDisplayName(req.user._id), }, }); });
+
+POST /api/communications/messages/thread/:threadId/reply
+   body: content, messageType, attachments, replyToId
+   returns: .json({ success: true, message: 'Reply sent.', data: { message }, }); });
+
+DELETE /api/communications/messages/:messageId
+   returns: .json({ success: true, message: 'Message deleted.' }); }); // ═══════════════════════════════════════════ // NOTIFICATION // ═══════════════════════════════════════════
+
+GET /api/communications/notifications
+   query: page = 1, limit = 20, unreadOnly
+   returns: .json({ success: true, message: 'Notifications fetched.', data: { notifications, unreadCount }, }); });
+
+POST /api/communications/notifications/mark-all-read
+   returns: .json({ success: true, message: 'All notifications marked as read.', }); });
+
+POST /api/communications/notifications/clear-all
+   returns: .json({ success: true, message: 'All notifications cleared.', }); }); // ═══════════════════════════════════════════ // DOCUMENT // ═══════════════════════════════════════════
+
+PATCH /api/communications/notifications/:id/read
+   returns: .json({ success: true, message: 'Notification marked as read.', data: { notification }, }); });
+
+DELETE /api/communications/notifications/:id
+   returns: .json({ success: true, message: 'Notification deleted.', }); });
+
+GET /api/communications/documents   roles: ...adminRoles, 'receptionist', 'hr_manager'
+   query: ownerType, documentType, status, isVerified, search, page = 1, limit = 20
+   returns: .json({ success: true, message: 'Documents fetched.', data: { documents }, pagination: { total, page: parseInt(page), limit: parseInt(limit), totalPages: Math.ceil(total / parseInt(limit)), }, }); });
+   (paginated)
+
+POST /api/communications/documents
+   body: name, documentType, ownerType, student, teacher, employee, guardian, ownerName, ownerId, issueDate, expiryDate, documentNumber, issuedBy, isVisibleToOwner, isConfidential, academicYear, notes,
+   returns: .json({ success: true, message: 'Document uploaded.', data: { document }, }); });
+
+POST /api/communications/documents/:id/verify   roles: ...adminRoles, 'receptionist', 'hr_manager'
+   body: notes
+   returns: .json({ success: true, message: 'Document verified.', data: { document } }); });
+
+POST /api/communications/documents/:id/reject   roles: ...adminRoles, 'receptionist', 'hr_manager'
+   body: reason
+   returns: .json({ success: true, message: 'Document rejected.', data: { document } }); });
+
+DELETE /api/communications/documents/:id   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Document archived.' }); }); // ═══════════════════════════════════════════ // SUSPENSION // ═══════════════════════════════════════════
+
+GET /api/communications/suspensions/dashboard   roles: ...adminRoles, 'teacher'
+   returns: .json({ success: true, message: 'Suspension dashboard fetched.', data: stats, }); });
+
+GET /api/communications/suspensions   roles: ...adminRoles, 'teacher', 'receptionist'
+   query: grade, status, offenseCategory, academicYear, search, page = 1, limit = 20
+   returns: .json({ success: true, message: 'Suspensions fetched.', data: { suspensions }, pagination: { total, page: parseInt(page), limit: parseInt(limit), totalPages: Math.ceil(total / parseInt(limit)), }, }); });
+   (paginated)
+
+POST /api/communications/suspensions   roles: ...adminRoles, 'teacher'
+   body: student, type, reason, offenseCategory, incidentDescription, incidentDate, incidentLocation, witnesses, startDate, endDate, reinstatementConditions, requiresParentMeeting, academicYear, term, notes,
+   returns: .json({ success: true, message: `Suspension recorded. ${numberOfDays > 3 ? 'Pending director approval.' : 'Active from ' + start.toLocaleDateString('en-ET')}`, data: { suspension }, }); });
+
+GET /api/communications/suspensions/:id   roles: ...adminRoles, 'teacher'
+   returns: .json({ success: true, message: 'Suspension fetched.', data: { suspension }, }); });
+
+POST /api/communications/suspensions/:id/approve   roles: ...adminRoles
+   body: remarks
+   returns: .json({ success: true, message: 'Suspension approved.', data: { suspension }, }); });
+
+POST /api/communications/suspensions/:id/reinstate   roles: ...adminRoles, 'teacher'
+   body: notes, conditionsMet
+   returns: .json({ success: true, message: 'Student reinstated successfully.', data: { suspension }, }); });
