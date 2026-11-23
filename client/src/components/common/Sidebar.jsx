@@ -6,6 +6,7 @@ const HR = [...ADMIN, 'hr_manager'];
 const FIN = [...ADMIN, 'accountant'];
 const STAFF = [...ADMIN, 'teacher', 'receptionist'];
 const TEACH = [...ADMIN, 'teacher'];
+const LIB = [...ADMIN, 'librarian'];
 
 const SECTIONS = [
   {
@@ -61,7 +62,12 @@ const SECTIONS = [
   },
   {
     title: 'Library',
-    links: [{ to: '/library', icon: '📚', label: 'Library', roles: [...ADMIN, 'librarian'] }],
+    links: [
+      { to: '/library', icon: '📚', label: 'Library Dashboard', roles: LIB, end: true },
+      { to: '/library/books', icon: '📕', label: 'Books', roles: LIB },
+      { to: '/library/issues', icon: '🔄', label: 'Issue / Return', roles: LIB },
+      { to: '/library/members', icon: '👥', label: 'Members', roles: LIB },
+    ],
   },
   {
     title: 'More',
