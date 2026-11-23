@@ -53,6 +53,11 @@ const PaymentsPage = lazy(() => import('./pages/finance/PaymentsPage'));
 const IncomePage = lazy(() => import('./pages/finance/IncomePage'));
 const ExpensesPage = lazy(() => import('./pages/finance/ExpensesPage'));
 
+const LibraryDashboardPage = lazy(() => import('./pages/library/LibraryDashboardPage'));
+const BooksPage = lazy(() => import('./pages/library/BooksPage'));
+const BookIssuePage = lazy(() => import('./pages/library/BookIssuePage'));
+const LibraryMembersPage = lazy(() => import('./pages/library/LibraryMembersPage'));
+
 const ADMIN = ['super_admin', 'admin'];
 const STUDENT_VIEW = [...ADMIN, 'teacher', 'receptionist', 'accountant', 'librarian'];
 const STUDENT_EDIT = [...ADMIN, 'receptionist'];
@@ -60,6 +65,7 @@ const HR = [...ADMIN, 'hr_manager'];
 const STAFF = [...ADMIN, 'teacher', 'receptionist'];
 const TEACHER = [...ADMIN, 'teacher'];
 const FINANCE = [...ADMIN, 'accountant'];
+const LIBRARY = [...ADMIN, 'librarian'];
 
 const guard = (roles, element) => <ProtectedRoute roles={roles}>{element}</ProtectedRoute>;
 
@@ -128,6 +134,11 @@ const App = () => (
         <Route path="/finance/payments" element={guard(FINANCE, <PaymentsPage />)} />
         <Route path="/finance/income" element={guard(FINANCE, <IncomePage />)} />
         <Route path="/finance/expenses" element={guard(FINANCE, <ExpensesPage />)} />
+
+        <Route path="/library" element={guard(LIBRARY, <LibraryDashboardPage />)} />
+        <Route path="/library/books" element={guard(LIBRARY, <BooksPage />)} />
+        <Route path="/library/issues" element={guard(LIBRARY, <BookIssuePage />)} />
+        <Route path="/library/members" element={guard(LIBRARY, <LibraryMembersPage />)} />
       </Route>
 
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
