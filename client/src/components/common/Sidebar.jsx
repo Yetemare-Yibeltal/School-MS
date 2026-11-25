@@ -70,9 +70,17 @@ const SECTIONS = [
     ],
   },
   {
-    title: 'More',
+    title: 'Communications',
     links: [
       { to: '/notices', icon: '📢', label: 'Notices', roles: null },
+      { to: '/events', icon: '🗓️', label: 'Events', roles: null },
+      { to: '/messages', icon: '💬', label: 'Messages', roles: null },
+      { to: '/suspensions', icon: '⛔', label: 'Suspensions', roles: STAFF },
+    ],
+  },
+  {
+    title: 'More',
+    links: [
       { to: '/ai/assistant', icon: '🤖', label: 'AI Assistant', roles: null },
       { to: '/settings', icon: '⚙️', label: 'Settings', roles: ADMIN },
     ],
