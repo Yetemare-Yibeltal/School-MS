@@ -58,6 +58,11 @@ const BooksPage = lazy(() => import('./pages/library/BooksPage'));
 const BookIssuePage = lazy(() => import('./pages/library/BookIssuePage'));
 const LibraryMembersPage = lazy(() => import('./pages/library/LibraryMembersPage'));
 
+const NoticesPage = lazy(() => import('./pages/communications/NoticesPage'));
+const EventsPage = lazy(() => import('./pages/communications/EventsPage'));
+const MessagesPage = lazy(() => import('./pages/communications/MessagesPage'));
+const SuspensionsPage = lazy(() => import('./pages/communications/SuspensionsPage'));
+
 const ADMIN = ['super_admin', 'admin'];
 const STUDENT_VIEW = [...ADMIN, 'teacher', 'receptionist', 'accountant', 'librarian'];
 const STUDENT_EDIT = [...ADMIN, 'receptionist'];
@@ -139,6 +144,11 @@ const App = () => (
         <Route path="/library/books" element={guard(LIBRARY, <BooksPage />)} />
         <Route path="/library/issues" element={guard(LIBRARY, <BookIssuePage />)} />
         <Route path="/library/members" element={guard(LIBRARY, <LibraryMembersPage />)} />
+
+        <Route path="/notices" element={<NoticesPage />} />
+        <Route path="/events" element={<EventsPage />} />
+        <Route path="/messages" element={<MessagesPage />} />
+        <Route path="/suspensions" element={guard(STAFF, <SuspensionsPage />)} />
       </Route>
 
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
