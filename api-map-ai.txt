@@ -1,0 +1,21 @@
+
+##### /api/ai   (ai.routes.js)
+
+GET /api/ai/status
+   returns: .json({ success: true, data: { provider: 'Google Gemini', model: MODEL(), configured: !!process.env.GEMINI_API_KEY }, }); }); // POST /api/ai/chatbot
+
+POST /api/ai/chatbot
+   body: message, conversationHistory = []
+   returns: .json({ success: true, data: { response } }); }); // POST /api/ai/notice-writer
+
+POST /api/ai/notice-writer   roles: ...writers
+   body: noticeType, tone, language, keyPoints, targetAudience, additionalContext
+   returns: .json({ success: true, data: parsed }); }); // POST /api/ai/report-comment
+
+POST /api/ai/report-comment   roles: ...writers
+   body: studentName, grade, gpa, attendancePercentage, strongSubjects = [], weakSubjects = []
+   returns: .json({ success: true, data: { comment: comment.trim() } }); }); // POST /api/ai/exam-questions
+
+POST /api/ai/exam-questions   roles: ...writers
+   body: subject, grade, topic, count = 5, difficulty = 'medium'
+   returns: .json({ success: true, data: parsed }); });

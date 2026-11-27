@@ -1,0 +1,68 @@
+
+##### /api/auth   (auth.routes.js)
+
+POST /api/auth/register
+   body: firstName, fatherName, grandFatherName, email, phone, password, role, gender, dateOfBirth,
+   returns: .json({ success: true, message: 'Account created successfully. Please verify your email.', data: { user: user.toSafeObject(), }, }); }); // ─── Login ────────────────────────────────────
+
+POST /api/auth/login
+   body: email, password, rememberMe
+   returns: .json({ success: true, message: 'Login successful.', data: { user: user.toSafeObject(), accessToken, refreshToken: refreshTokenData.token, isTemporaryPassword: user.isTemporaryPassword, }, }); }); // ─── Logout ───────────────────────────────────
+
+POST /api/auth/refresh
+   handler: undefined  (not found in controller)
+
+POST /api/auth/forgot-password
+   body: email
+   returns: .json({ success: true, message: 'If an account with that email exists, a reset link has been sent.', }); }); // ─── Reset Password ───────────────────────────
+
+POST /api/auth/reset-password/:token
+   body: newPassword
+   returns: .json({ success: true, message: 'Password reset successful. Please login with your new password.', }); }); // ─── Verify Email ─────────────────────────────
+
+GET /api/auth/verify-email/:token
+   returns: .json({ success: true, message: 'Email verified successfully.', data: { user: user.toSafeObject() }, }); }); // ─── Resend Verification ──────────────────────
+
+POST /api/auth/resend-verification
+   body: email
+   returns: .json({ success: true, message: 'Verification email sent.', }); }); // ─── Upload Profile Photo ─────────────────────
+
+POST /api/auth/logout
+   returns: .json({ success: true, message: 'Logged out successfully.', }); }); // ─── Get Current User ─────────────────────────
+
+GET /api/auth/me
+   returns: .json({ success: true, message: 'User profile fetched.', data: { user }, }); }); // ─── Update Profile ───────────────────────────
+
+PATCH /api/auth/me
+   returns: .json({ success: true, message: 'Profile updated successfully.', data: { user: user.toSafeObject() }, }); }); // ─── Change Password ──────────────────────────
+
+POST /api/auth/change-password
+   body: currentPassword, newPassword
+   returns: .json({ success: true, message: 'Password changed successfully. Please login again.', }); }); // ─── Forgot Password ──────────────────────────
+
+POST /api/auth/me/photo
+   returns: .json({ success: true, message: 'Profile photo updated.', data: { photo: user.photo, }, }); }); // ─── Get All Users (Admin) ────────────────────
+
+GET /api/auth/users   roles: 'super_admin', 'admin'
+   query: page = 1, limit = 20, role, isActive, search, sort = 'createdAt', order = 'desc',
+   returns: .json({ success: true, message: 'Users fetched successfully.', data: { users }, pagination: { total, page: parseInt(page), limit: parseInt(limit), totalPages, hasNextPage: parseInt(page) < totalPages, hasPreviousPage: parseInt(page) > 1, }, }); }); // ─── Get User by ID (Admin) ───────────────────
+   (paginated)
+
+GET /api/auth/users/stats   roles: 'super_admin', 'admin'
+   returns: .json({ success: true, message: 'Auth stats fetched.', data: { totalUsers, activeUsers, inactiveUsers: totalUsers - activeUsers, byRole, recentLogins, activeTokens, }, }); });
+
+GET /api/auth/users/:id   roles: 'super_admin', 'admin'
+   returns: .json({ success: true, message: 'User fetched.', data: { user }, }); }); // ─── Update User (Admin) ──────────────────────
+
+PATCH /api/auth/users/:id   roles: 'super_admin', 'admin'
+   returns: .json({ success: true, message: 'User updated successfully.', data: { user }, }); }); // ─── Deactivate User ──────────────────────────
+
+PATCH /api/auth/users/:id/deactivate   roles: 'super_admin', 'admin'
+   returns: .json({ success: true, message: 'User deactivated successfully.', }); }); // ─── Reactivate User ──────────────────────────
+
+PATCH /api/auth/users/:id/reactivate   roles: 'super_admin', 'admin'
+   returns: .json({ success: true, message: 'User reactivated successfully.', data: { user: user.toSafeObject() }, }); }); // ─── Reset User Password (Admin) ──────────────
+
+POST /api/auth/users/:id/reset-password   roles: 'super_admin', 'admin'
+   body: temporaryPassword
+   returns: .json({ success: true, message: 'Password reset successfully. Temporary password sent to user email.', }); }); // ─── Get Auth Stats (Admin) ───────────────────

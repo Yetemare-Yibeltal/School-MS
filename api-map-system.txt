@@ -1,0 +1,22 @@
+
+##### /api/system   (system.routes.js)
+
+GET /api/system/dashboard
+   returns: .json({ success: true, data: { overview: { activeStudents, totalTeachers, totalEmployees }, today: { payments: { total: todayPayments }, attendance: { present, late, absent, total: attTotal }, }, alerts: { pendingLeaves, overdueBooks, activeSuspensions }, finance: { monthlyIncome, monthlyExpenses, netBalance: monthlyIncome - monthlyExpenses }, upcomingEvents
+
+GET /api/system/health   roles: ...adminRoles
+   returns: .json({ success: true, data: { status: 'OK', database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected', uptimeSeconds: Math.round(process.uptime()), memoryMB: Math.round(process.memoryUsage().rss / 1024 / 1024), timestamp: new Date().toISOString(), }, }); });
+
+GET /api/system/settings
+   returns: .json({ success: true, data: { settings } }); }); // PATCH /api/system/settings
+
+PATCH /api/system/settings   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Settings updated.', data: { settings } }); }); // POST /api/system/logo
+
+POST /api/system/logo   roles: ...adminRoles
+   returns: .json({ success: true, message: 'Logo uploaded.', data: { logo: { url: result.url, publicId: result.publicId } }, }); }); // GET /api/system/dashboard
+
+GET /api/system/audit-logs   roles: ...adminRoles
+   query: action, resource, userId, startDate, endDate
+   returns: .json({ success: true, data: { logs }, pagination: { page, limit, total, totalPages, from: total === 0 ? 0 : (page - 1) * limit + 1, to: Math.min(page * limit, total), hasNextPage: page < totalPages, hasPreviousPage: page > 1, }, }); }); // GET /api/system/health
+   (paginated)
