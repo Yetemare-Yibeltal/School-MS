@@ -63,6 +63,12 @@ const EventsPage = lazy(() => import('./pages/communications/EventsPage'));
 const MessagesPage = lazy(() => import('./pages/communications/MessagesPage'));
 const SuspensionsPage = lazy(() => import('./pages/communications/SuspensionsPage'));
 
+const SettingsPage = lazy(() => import('./pages/system/SettingsPage'));
+const AuditLogsPage = lazy(() => import('./pages/system/AuditLogsPage'));
+const ProfilePage = lazy(() => import('./pages/system/ProfilePage'));
+const AIAssistantPage = lazy(() => import('./pages/ai/AIAssistantPage'));
+const AINoticePage = lazy(() => import('./pages/ai/AINoticePage'));
+
 const ADMIN = ['super_admin', 'admin'];
 const STUDENT_VIEW = [...ADMIN, 'teacher', 'receptionist', 'accountant', 'librarian'];
 const STUDENT_EDIT = [...ADMIN, 'receptionist'];
@@ -97,6 +103,7 @@ const App = () => (
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
 
         <Route path="/students" element={guard(STUDENT_VIEW, <StudentsPage />)} />
         <Route path="/students/new" element={guard(STUDENT_EDIT, <AddStudentPage />)} />
@@ -149,6 +156,12 @@ const App = () => (
         <Route path="/events" element={<EventsPage />} />
         <Route path="/messages" element={<MessagesPage />} />
         <Route path="/suspensions" element={guard(STAFF, <SuspensionsPage />)} />
+
+        <Route path="/ai/assistant" element={<AIAssistantPage />} />
+        <Route path="/ai/notice" element={guard(TEACHER, <AINoticePage />)} />
+
+        <Route path="/settings" element={guard(ADMIN, <SettingsPage />)} />
+        <Route path="/audit-logs" element={guard(ADMIN, <AuditLogsPage />)} />
       </Route>
 
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
