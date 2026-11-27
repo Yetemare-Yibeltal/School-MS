@@ -9,10 +9,7 @@ const TEACH = [...ADMIN, 'teacher'];
 const LIB = [...ADMIN, 'librarian'];
 
 const SECTIONS = [
-  {
-    title: 'Main',
-    links: [{ to: '/dashboard', icon: '🏠', label: 'Dashboard', roles: null }],
-  },
+  { title: 'Main', links: [{ to: '/dashboard', icon: '🏠', label: 'Dashboard', roles: null }] },
   {
     title: 'People',
     links: [
@@ -79,10 +76,18 @@ const SECTIONS = [
     ],
   },
   {
-    title: 'More',
+    title: 'AI',
     links: [
       { to: '/ai/assistant', icon: '🤖', label: 'AI Assistant', roles: null },
+      { to: '/ai/notice', icon: '✍️', label: 'AI Notice Writer', roles: TEACH },
+    ],
+  },
+  {
+    title: 'System',
+    links: [
       { to: '/settings', icon: '⚙️', label: 'Settings', roles: ADMIN },
+      { to: '/audit-logs', icon: '🔍', label: 'Audit Logs', roles: ADMIN },
+      { to: '/profile', icon: '👤', label: 'My Profile', roles: null },
     ],
   },
 ];
